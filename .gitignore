@@ -1,0 +1,30 @@
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# Node modules
+node_modules/
+
+# Python virtual environment
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build directories
+.next/
+out/
+build/
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local files
+.DS_Store
+.idea/
+.vscode/
