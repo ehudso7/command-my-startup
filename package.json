@@ -1,5 +1,7 @@
 {
   "name": "command-my-startup",
   "private": true,
-  "workspaces": ["frontend"]
+  "workspaces": [
+    "frontend"
+  ]
 }
