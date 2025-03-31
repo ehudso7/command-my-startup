@@ -61,7 +61,7 @@
   },
   "optionalDependencies": {
     "@next/swc-linux-x64-gnu": "15.2.4",
-    "@next/swc-linux-x64-musl": "15.2.4",
+    "@next/swc-linux-x64-musl": "15.2.4"
   },
   "resolutions": {
     "clsx": "2.1.1",
