@@ -12,7 +12,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "vercel-build": "npm install && next build --no-lint"
+    "vercel-build": "npm install --ignore-scripts && next build --no-lint"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
