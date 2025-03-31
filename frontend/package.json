@@ -12,7 +12,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "vercel-build": "npm install --ignore-scripts && next build --no-lint"
+    "vercel-build": "npm install --platform=linux --arch=x64 && next build --no-lint"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -22,7 +22,7 @@
     "@stripe/stripe-js": "^6.1.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.4",
-    "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/typography": "0.5.16",
     "@vercel/analytics": "^1.5.0",
     "axios": "^1.8.4",
     "clsx": "2.1.1",
@@ -43,23 +43,25 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@next/swc-darwin-arm64": "^15.2.4",
-    "@tailwindcss/typography": "0.5.16",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "20.17.28",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "autoprefixer": "^10.4.21",
+    "autoprefixer": "10.4.21",
     "cypress": "^14.2.1",
     "eslint": "^9",
     "eslint-config-next": "^15.2.4",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^3.4.17",
+    "postcss": "8.5.3",
+    "tailwindcss": "3.4.1",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "@next/swc-linux-x64-gnu": "15.2.4",
+    "@next/swc-linux-x64-musl": "15.2.4"
   },
   "resolutions": {
     "clsx": "2.1.1",
@@ -69,8 +71,5 @@
   "engines": {
     "node": "20.x",
     "npm": ">=9.x"
-  },
-  "overrides": {
-    "@next/swc-darwin-arm64": "15.2.4"
   }
 }
