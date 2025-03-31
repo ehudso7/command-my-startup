@@ -59,7 +59,7 @@ export default function ForgotPasswordPage() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" name="reset-password-form" method="post">
             <div>
               <label
                 htmlFor="email"
@@ -69,7 +69,9 @@ export default function ForgotPasswordPage() {
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
+                autoComplete="username email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
