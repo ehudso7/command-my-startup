@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-export default {
+const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -17,3 +17,5 @@ export default {
       "pk_test_dummy_key_for_build_time_only",
   },
 };
+
+module.exports = nextConfig;

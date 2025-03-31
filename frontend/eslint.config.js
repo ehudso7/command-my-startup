@@ -1,11 +1,11 @@
-import js from "@eslint/js";
-import nextPlugin from "@next/eslint-plugin-next";
-import typescriptParser from "@typescript-eslint/parser";
-import typescriptPlugin from "@typescript-eslint/eslint-plugin";
-import reactHooksPlugin from "eslint-plugin-react-hooks";
-import reactPlugin from "eslint-plugin-react";
+const js = require("@eslint/js");
+const nextPlugin = require("@next/eslint-plugin-next");
+const typescriptParser = require("@typescript-eslint/parser");
+const typescriptPlugin = require("@typescript-eslint/eslint-plugin");
+const reactHooksPlugin = require("eslint-plugin-react-hooks");
+const reactPlugin = require("eslint-plugin-react");
 
-export default [
+module.exports = [
   // Ignore patterns
   {
     ignores: [
