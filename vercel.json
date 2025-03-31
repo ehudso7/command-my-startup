@@ -1,5 +1,14 @@
 {
-  "buildCommand": "cd frontend && npm run vercel-build",
-  "outputDirectory": "frontend/.next",
-  "installCommand": "cd frontend && npm install --ignore-scripts"
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "build": {
+    "env": {
+      "NODE_VERSION": "20.x"
+    }
+  }
 }
