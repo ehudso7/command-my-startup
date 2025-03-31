@@ -3,9 +3,25 @@ import { createClient } from '@/lib/supabase/server';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-03-30',
-});
+// Properly initialize Stripe with fallback for build time
+const getStripeInstance = () => {
+  const apiKey = process.env.STRIPE_SECRET_KEY;
+  
+  if (!apiKey) {
+    console.warn('Missing STRIPE_SECRET_KEY environment variable');
+    // For build time only, provide a dummy key
+    return new Stripe('sk_test_dummy_key_for_build_time_only', {
+      apiVersion: '2022-11-15',
+    });
+  }
+  
+  return new Stripe(apiKey, {
+    apiVersion: '2022-11-15',
+  });
+};
+
+// Create a single instance of Stripe
+const stripe = getStripeInstance();
 
 // Map Stripe price IDs to subscription tiers
 const PRICE_ID_TO_TIER: Record<string, string> = {
@@ -19,14 +35,31 @@ export async function POST(request: Request) {
   const body = await request.text();
   const signature = headers().get('stripe-signature') as string;
   
+  if (!signature) {
+    return NextResponse.json(
+      { error: 'Missing stripe-signature header' },
+      { status: 400 }
+    );
+  }
+  
   // Verify webhook signature
   let event: Stripe.Event;
   
   try {
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    
+    if (!webhookSecret) {
+      console.error('Missing STRIPE_WEBHOOK_SECRET environment variable');
+      return NextResponse.json(
+        { error: 'Webhook secret not configured' },
+        { status: 500 }
+      );
+    }
+    
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      webhookSecret
     );
   } catch (error: any) {
     console.error('Webhook signature verification failed:', error.message);
