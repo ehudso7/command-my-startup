@@ -1,0 +1,66 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+
+jobs:
+  test:
+    name: Test backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run linting
+        run: |
+          cd backend
+          black . --check
+          isort . --check
+
+      - name: Run tests
+        run: |
+          cd backend
+          pytest -v
+        env:
+          ENVIRONMENT: test
+          SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.TEST_SUPABASE_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.TEST_JWT_SECRET_KEY }}
+          OPENAI_API_KEY: ${{ secrets.TEST_OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.TEST_ANTHROPIC_API_KEY }}
+          STRIPE_API_KEY: ${{ secrets.TEST_STRIPE_API_KEY }}
+
+  deploy:
+    name: Deploy to Render
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Render
+        uses: JorgeLNJunior/render-deploy@v1
+        with:
+          service_id: ${{ secrets.RENDER_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          wait_deploy: true
+          sleep: 30
+          clear_cache: true

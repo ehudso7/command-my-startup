@@ -1,0 +1,48 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly at midnight on Sunday
+
+jobs:
+  security:
+    name: Security scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit safety
+
+      - name: Run Bandit (SAST)
+        run: |
+          cd backend
+          bandit -r . -c bandit.yaml
+
+      - name: Check dependencies with Safety
+        run: |
+          cd backend
+          safety check -r requirements.txt
+
+      - name: Run Dependency Review
+        uses: actions/dependency-review-action@v3
+        if: github.event_name == 'pull_request'

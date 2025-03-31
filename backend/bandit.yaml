@@ -1,0 +1,48 @@
+---
+# Bandit configuration file
+
+# Exclude certain paths from scanning
+exclude_dirs:
+  - venv
+  - tests
+  - "__pycache__"
+  - ".git"
+
+# Increase severity of certain issues
+any_other_function_with_shell_equals_true:
+  no_shell: [os.system, subprocess.Popen, subprocess.call]
+
+# Adjust test profiles
+skips: []
+
+# Define test profiles
+profiles:
+  medium_confidence:
+    include:
+      - B101  # assert_used
+      - B102  # exec_used
+      - B103  # set_bad_file_permissions
+      - B104  # hardcoded_bind_all_interfaces
+      - B105  # hardcoded_password_string
+      - B106  # hardcoded_password_funcarg
+      - B107  # hardcoded_password_default
+      - B108  # hardcoded_tmp_directory
+      - B110  # try_except_pass
+      - B112  # try_except_continue
+      - B201  # flask_debug_true
+      - B301  # pickle
+      - B304  # ciphers
+      - B602  # subprocess_popen_with_shell_equals_true
+      - B603  # subprocess_without_shell_equals_true
+      - B604  # any_other_function_with_shell_equals_true
+      - B605  # start_process_with_a_shell
+      - B606  # start_process_with_no_shell
+      - B607  # start_process_with_partial_path
+      - B608  # hardcoded_sql_expressions
+      - B609  # linux_commands_wildcard_injection
+      - B610  # django_extra_used
+      - B611  # django_rawsql_used
+      - B701  # jinja2_autoescape_false
+      - B702  # use_of_mako_templates
+    exclude:
+      - B101  # assert_used

@@ -1,9 +1,33 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
 from prometheus_client import Counter, Histogram, make_asgi_app
+from routes import api_router
+from config import get_settings
+from middleware import (
+    http_exception_handler, 
+    validation_exception_handler, 
+    internal_exception_handler,
+    RequestValidationMiddleware
+)
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+# Get application settings
+settings = get_settings()
 
 # Create the FastAPI app
-app = FastAPI(title="Command My Startup API", version="1.0.0")
+app = FastAPI(
+    title=settings.app_name, 
+    version=settings.app_version,
+    description=settings.app_description
+)
 
 # Prometheus metrics
 REQUEST_COUNT = Counter(
@@ -21,11 +45,19 @@ REQUEST_LATENCY = Histogram(
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with your frontend domain
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add request validation middleware
+app.add_middleware(RequestValidationMiddleware)
+
+# Add exception handlers
+app.add_exception_handler(status.HTTP_500_INTERNAL_SERVER_ERROR, internal_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(status.HTTP_404_NOT_FOUND, http_exception_handler)
 
 # Add Prometheus metrics endpoint
 metrics_app = make_asgi_app()
@@ -45,13 +77,45 @@ async def monitor_requests(request, call_next):
     
     return response
 
+# Include API routes
+app.include_router(api_router)
+
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to Command My Startup API"}
+    return {"message": f"Welcome to {settings.app_name}"}
 
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialization tasks on app startup"""
+    logger.info(f"Starting {settings.app_name} in {settings.environment} mode")
+    
+    # Validate required environment variables on startup
+    missing_vars = []
+    if settings.environment == "production":
+        required_vars = [
+            "JWT_SECRET_KEY",
+            "SUPABASE_URL",
+            "SUPABASE_KEY",
+            "OPENAI_API_KEY",
+            "ANTHROPIC_API_KEY",
+            "STRIPE_API_KEY"
+        ]
+        
+        for var in required_vars:
+            if not getattr(settings, var.lower(), None):
+                missing_vars.append(var)
+        
+        if missing_vars:
+            logger.warning(f"Missing required environment variables: {', '.join(missing_vars)}")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup tasks on app shutdown"""
+    logger.info(f"Shutting down {settings.app_name}")
 
 if __name__ == "__main__":
     import uvicorn
