@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from "react";
 
 interface UploadContextType {
   // Define your upload state and methods here
@@ -23,7 +23,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <UploadContext.Provider 
+    <UploadContext.Provider
       value={{ isUploading, uploadProgress, startUpload, completeUpload }}
     >
       {children}
@@ -34,7 +34,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
 export function useUpload() {
   const context = useContext(UploadContext);
   if (!context) {
-    throw new Error('useUpload must be used within an UploadProvider');
+    throw new Error("useUpload must be used within an UploadProvider");
   }
   return context;
 }

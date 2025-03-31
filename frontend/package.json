@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build --no-lint",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "fix": "npx eslint . --fix && npx prettier --write . && npx tsc --noEmit",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "test": "jest",
@@ -37,7 +39,7 @@
     "react-hot-toast": "^2.5.2",
     "react-markdown": "^10.1.0",
     "react-use": "^17.6.0",
-    "stripe": "17.7.0",
+    "stripe": "^17.7.0",
     "tailwind-merge": "3.0.2",
     "uuid": "^11.1.0",
     "zod": "^3.24.2"
@@ -45,21 +47,30 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.23.0",
+    "@next/eslint-plugin-next": "^15.2.4",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^29.5.14",
     "@types/node": "20.17.28",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.29.0",
+    "@typescript-eslint/parser": "^8.29.0",
     "autoprefixer": "10.4.21",
     "cypress": "^14.2.1",
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.2.4",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-formatter-visualstudio": "^8.40.0",
+    "eslint-plugin-prettier": "^5.2.5",
     "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "8.5.3",
+    "prettier": "^3.5.3",
     "tailwindcss": "3.4.1",
     "typescript": "^5",
     "typescript-eslint": "^8.28.0"
@@ -76,5 +87,6 @@
   "engines": {
     "node": "20.x",
     "npm": ">=9.x"
-  }
+  },
+  "type": "module"
 }

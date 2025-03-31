@@ -25,11 +25,7 @@
         "name": "next"
       }
     ],
-    "types": [
-      "node",
-      "@types/react",
-      "@types/react-dom"
-    ],
+    "types": ["node", "@types/react", "@types/react-dom"],
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "noUnusedLocals": false,
@@ -46,7 +42,5 @@
     "**/*.jsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

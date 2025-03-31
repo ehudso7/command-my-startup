@@ -1,13 +1,26 @@
 module.exports = {
-  extends: ["next", "next/core-web-vitals"],
-  rules: {
-    // Turn off or downgrade rules that are causing the most problems
-    "@typescript-eslint/no-unused-vars": "warn", // Change from error to warning
-    "@typescript-eslint/no-explicit-any": "warn", // Change from error to warning
-    "react/no-unescaped-entities": "warn", // Change from error to warning
-    "@typescript-eslint/no-empty-object-type": "warn", // Change from error to warning
-    "react-hooks/exhaustive-deps": "warn", // Change from error to warning
-    "@next/next/no-img-element": "warn", // Change from error to warning
-    "@typescript-eslint/no-require-imports": "warn", // Change from error to warning
+  'env': {
+    'browser': true,
+    'node': true,  // Ensures Node.js globals like 'module' and 'require' are available
+    'es2021': true
   },
+  'globals': {
+    'module': 'readonly',  // This ensures 'module' is treated as a global variable
+    'exports': 'readonly',
+    'self': 'readonly',
+    'document': 'readonly',
+    'window': 'readonly',
+    'process': 'readonly',
+    'Buffer': 'readonly',
+    'require': 'readonly'  // Added 'require' to globals  
+  },
+  'extends': [
+    'eslint:recommended',
+    'plugin:react/recommended'
+  ],
+  'parserOptions': {
+    'ecmaVersion': 12,
+    'sourceType': 'module'
+  }
 };
+
