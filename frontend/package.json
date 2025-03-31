@@ -12,7 +12,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "vercel-build": "npm install --platform=linux --arch=x64 && next build --no-lint"
+    "vercel-build": "npm install --platform=linux --arch=x64 tailwindcss postcss autoprefixer && next build --no-lint"t"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
