@@ -12,7 +12,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "vercel-build": "npm install && npm run build"
+    "vercel-build": "npm install @tailwindcss/postcss && next build --no-lint"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "4.0.17",
+    "@tailwindcss/postcss": "^4.0.17",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
