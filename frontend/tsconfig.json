@@ -15,7 +15,10 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@/contexts/*": ["./src/contexts/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/lib/*": ["./src/lib/*"]
     },
     "plugins": [
       {
@@ -25,18 +28,15 @@
     "types": [
       "node",
       "@types/react",
-      "@types/react-dom",
-      "@types/stripe"
+      "@types/react-dom"
     ],
     "forceConsistentCasingInFileNames": true,
-    
-    /* Added/Modified settings for API routes compatibility */
-    "noImplicitAny": false,           /* Allow 'any' type to be used without explicit annotation */
-    "noUnusedLocals": false,          /* Don't report errors on unused locals */
-    "noUnusedParameters": false,      /* Don't report errors on unused parameters */
-    "strictNullChecks": false,        /* Disable strict null checks */
-    "downlevelIteration": true,       /* Enable downlevel iteration for older browsers */
-    "allowSyntheticDefaultImports": true /* Allow default imports from modules with no default export */
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strictNullChecks": false,
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "next-env.d.ts",
