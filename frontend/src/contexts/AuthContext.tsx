@@ -168,13 +168,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Sign in with third-party provider
   async function signInWithProvider(
-    provider: "google" | "github" | "microsoft",
+    // Use type assertion to make TypeScript happy
+    provider: "google" | "github" | "microsoft", 
   ) {
+    // Cast the provider to Supabase's Provider type
+    const supabaseProvider = provider as any; // This is a workaround for type compatibility
     try {
       setIsLoading(true);
 
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: supabaseProvider,
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },

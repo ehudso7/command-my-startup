@@ -1,0 +1,18 @@
+# Build files
+.next/
+out/
+dist/
+build/
+
+# Dependency directories
+node_modules/
+
+# Cache directories
+.cache/
+.npm/
+
+# Misc
+.DS_Store
+*.log
+*.lock
+*.tsbuildinfo

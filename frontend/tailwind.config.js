@@ -1,9 +1,10 @@
 /* eslint-env node */  // Ensure ESLint treats this as a Node.js environment
 
-const { fontFamily } = require('tailwindcss/defaultTheme');  // Import fontFamily from Tailwind's default theme
+import defaultTheme from 'tailwindcss/defaultTheme';
+const { fontFamily } = defaultTheme;
 
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   // Support dark mode via the 'dark' class instead of media queries
   darkMode: "class",
 

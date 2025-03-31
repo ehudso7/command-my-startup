@@ -9,13 +9,13 @@ export function getStripeInstance(): Stripe {
     // For build time only, return a mock or instance with a dummy key
     console.warn("Using dummy Stripe key for build process");
     return new Stripe("sk_test_dummy_key_for_build_time_only", {
-      apiVersion: "2022-11-15",
+      apiVersion: "2025-02-24.acacia",
     });
   }
 
   // For regular runtime with proper API key
   return new Stripe(apiKey, {
-    apiVersion: "2022-11-15",
+    apiVersion: "2025-02-24.acacia",
   });
 }
 

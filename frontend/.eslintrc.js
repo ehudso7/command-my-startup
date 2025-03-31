@@ -1,18 +1,16 @@
-module.exports = {
+export default {
   'env': {
     'browser': true,
-    'node': true,  // Ensures Node.js globals like 'module' and 'require' are available
+    'node': true,
     'es2021': true
   },
   'globals': {
-    'module': 'readonly',  // This ensures 'module' is treated as a global variable
+    'require': 'readonly',
+    'module': 'readonly',
     'exports': 'readonly',
     'self': 'readonly',
     'document': 'readonly',
-    'window': 'readonly',
-    'process': 'readonly',
-    'Buffer': 'readonly',
-    'require': 'readonly'  // Added 'require' to globals  
+    'window': 'readonly'
   },
   'extends': [
     'eslint:recommended',
@@ -23,4 +21,3 @@ module.exports = {
     'sourceType': 'module'
   }
 };
-

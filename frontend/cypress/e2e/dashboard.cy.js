@@ -4,7 +4,7 @@ describe("Dashboard Page", () => {
     cy.login("test@example.com", "testpassword");
 
     // Visit the dashboard page
-    cy.visit("/dashboard");
+    cy.visit("/dashboard/dashboard");
   });
 
   it("displays dashboard elements", () => {
@@ -36,15 +36,4 @@ describe("Dashboard Page", () => {
   });
 });
 
-// Add custom command for login
-Cypress.Commands.add("login", (email, password) => {
-  cy.session([email, password], () => {
-    cy.visit("/auth/login");
-    cy.get('input[type="email"]').type(email);
-    cy.get('input[type="password"]').type(password);
-    cy.get('button[type="submit"]').click();
-
-    // Wait for redirect to dashboard
-    cy.url().should("include", "/dashboard");
-  });
-});
+// Custom command for login is now in commands.ts

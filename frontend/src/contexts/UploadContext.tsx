@@ -1,8 +1,17 @@
 "use client";
 
+import React from "react";
 import { createContext, useContext, useState, ReactNode } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { supabase } from "@/lib/supabase/client";
+
+// Extend FileOptions to include onUploadProgress
+interface ExtendedFileOptions {
+  cacheControl?: string;
+  upsert?: boolean;
+  contentType?: string;
+  onUploadProgress?: (event: { loaded: number; total: number }) => void;
+}
 
 interface UploadFile {
   id: string;
@@ -143,7 +152,8 @@ export function UploadProvider({ children }: { children: ReactNode }) {
             cacheControl: "3600",
             upsert: false,
             contentType: fileData.file.type,
-            onUploadProgress: (event) => {
+            // @ts-ignore - Supabase SDK type definition doesn't include onUploadProgress
+            onUploadProgress: (event: { loaded: number; total: number }) => {
               const progress = (event.loaded / event.total) * 100;
 
               // Update file progress

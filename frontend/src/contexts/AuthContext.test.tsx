@@ -2,6 +2,9 @@ import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AuthProvider, useAuth } from "./AuthContext";
 
+// Mock Next.js navigation hooks
+jest.mock("next/navigation", () => require("./__mocks__/next_navigation"));
+
 // Mock supabase client
 jest.mock("@/lib/supabase/client", () => ({
   supabase: {

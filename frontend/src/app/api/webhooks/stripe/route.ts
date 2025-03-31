@@ -11,12 +11,12 @@ const getStripeInstance = () => {
     console.warn("Missing STRIPE_SECRET_KEY environment variable");
     // For build time only, provide a dummy key
     return new Stripe("sk_test_dummy_key_for_build_time_only", {
-      apiVersion: "2022-11-15",
+      apiVersion: "2025-02-24.acacia",
     });
   }
 
   return new Stripe(apiKey, {
-    apiVersion: "2022-11-15",
+    apiVersion: "2025-02-24.acacia",
   });
 };
 

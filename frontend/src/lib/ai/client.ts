@@ -253,8 +253,8 @@ async function callAnthropic(
   const anthropicMessages = messages
     .filter((msg) => msg.role !== "system")
     .map((msg) => ({
-      role: msg.role === "assistant" ? "assistant" : "user",
-      content: msg.content,
+      role: msg.role === "assistant" ? "assistant" as const : "user" as const,
+      content: typeof msg.content === 'string' ? msg.content : '',
     }));
 
   // Make the API call
@@ -269,9 +269,22 @@ async function callAnthropic(
     },
   });
 
+  // Check if the response content is available
+  let responseContent = "";
+  if (response.content && response.content.length > 0) {
+    // Safety check for the content format and handle different content types
+    const content = response.content[0];
+    if ('text' in content) {
+      responseContent = content.text;
+    } else if (typeof content === 'object' && content !== null) {
+      // Try to extract text in a safer way or use a fallback
+      responseContent = JSON.stringify(content);
+    }
+  }
+
   return {
     id: response.id,
-    content: response.content[0].text,
+    content: responseContent,
     model: response.model,
     provider: AIProvider.ANTHROPIC,
     usage: {

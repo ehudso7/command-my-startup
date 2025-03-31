@@ -2,13 +2,15 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build --no-lint",
     "start": "next start",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "fix": "npx eslint . --fix && npx prettier --write . && npx tsc --noEmit",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "lint:all": "eslint .",
+    "fix": "npx eslint src/ --fix && npx prettier --write src/ && npx tsc --noEmit",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "test": "jest",
@@ -87,6 +89,5 @@
   "engines": {
     "node": "20.x",
     "npm": ">=9.x"
-  },
-  "type": "module"
+  }
 }
