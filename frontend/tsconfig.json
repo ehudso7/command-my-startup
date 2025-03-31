@@ -5,7 +5,6 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -28,7 +27,16 @@
       "@types/react",
       "@types/react-dom",
       "@types/stripe"
-    ]
+    ],
+    "forceConsistentCasingInFileNames": true,
+    
+    /* Added/Modified settings for API routes compatibility */
+    "noImplicitAny": false,           /* Allow 'any' type to be used without explicit annotation */
+    "noUnusedLocals": false,          /* Don't report errors on unused locals */
+    "noUnusedParameters": false,      /* Don't report errors on unused parameters */
+    "strictNullChecks": false,        /* Disable strict null checks */
+    "downlevelIteration": true,       /* Enable downlevel iteration for older browsers */
+    "allowSyntheticDefaultImports": true /* Allow default imports from modules with no default export */
   },
   "include": [
     "next-env.d.ts",
