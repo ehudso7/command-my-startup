@@ -1,7 +1,7 @@
-// Minimal PostCSS config
+/** @type {import('postcss').Config} */
 module.exports = {
   plugins: {
     tailwindcss: {},
-    autoprefixer: {}
-  }
+    autoprefixer: {},
+  },
 }
