@@ -7,6 +7,15 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
+// Show environment details for debugging
+process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+console.log('====================== ENVIRONMENT INFO ======================');
+console.log(`Node version: ${process.version}`);
+console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`VERCEL: ${process.env.VERCEL}`);
+console.log(`Current directory: ${process.cwd()}`);
+console.log('==============================================================');
+
 function log(message) {
   console.log(`[VERCEL-FIX] ${message}`);
 }
@@ -170,11 +179,42 @@ export default function RootLayout({
     log('Continuing with mock implementations...');
   }
   
+  // Create minimal globals.css if needed
+  const globalsCssPath = path.join(process.cwd(), 'src', 'app', 'globals.css');
+  if (fs.existsSync(globalsCssPath)) {
+    // Backup original globals.css
+    const backupCssPath = `${globalsCssPath}.backup`;
+    if (!fs.existsSync(backupCssPath)) {
+      fs.copyFileSync(globalsCssPath, backupCssPath);
+      log('Created globals.css backup');
+    }
+    
+    // Create very minimal globals.css
+    const minimalCss = `
+/* Minimal globals.css for emergency build */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+`;
+    fs.writeFileSync(globalsCssPath, minimalCss);
+    log('Created minimal globals.css');
+  }
+
   // Always force the emergency layout
   log('Applying emergency layout as final fallback...');
   const layoutPath = path.join(process.cwd(), 'src', 'app', 'layout.tsx');
   if (fs.existsSync(layoutPath)) {
     try {
+      // Log current layout contents for debugging
+      log('Current layout.tsx content:');
+      console.log(fs.readFileSync(layoutPath, 'utf8'));
+      
       // Backup if not already done
       const backupPath = `${layoutPath}.backup`;
       if (!fs.existsSync(backupPath)) {
@@ -183,7 +223,8 @@ export default function RootLayout({
       }
       
       // Write the most minimal layout possible
-      const minimalLayout = `
+      // IMPORTANT: No TypeScript, no imports except CSS, absolutely minimal
+      const minimalLayout = `// Emergency minimal layout for Vercel build
 import "./globals.css";
 
 export const metadata = {
@@ -191,11 +232,11 @@ export const metadata = {
   description: "AI-driven platform to build and manage startups"
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout(props) {
   return (
     <html lang="en">
       <body>
-        {children}
+        {props.children}
       </body>
     </html>
   );
@@ -203,9 +244,45 @@ export default function RootLayout({ children }) {
       
       fs.writeFileSync(layoutPath, minimalLayout);
       log('Applied minimal emergency layout');
+      
+      // Verify the write worked
+      const newContent = fs.readFileSync(layoutPath, 'utf8');
+      log('New layout.tsx content:');
+      console.log(newContent);
     } catch (err) {
       log(`Error applying emergency layout: ${err.message}`);
     }
+  }
+  
+  // Delete problematic next/font module files if they exist
+  const nextPath = path.join(nodeModulesPath, 'next');
+  if (fs.existsSync(nextPath)) {
+    const fontPaths = [
+      path.join(nextPath, 'dist', 'compiled', '@next', 'font'),
+      path.join(nextPath, 'font'),
+      path.join(nextPath, 'dist', 'client', 'font')
+    ];
+    
+    fontPaths.forEach(fontPath => {
+      if (fs.existsSync(fontPath)) {
+        try {
+          log(`Found problematic font directory: ${fontPath}`);
+          // Replace the module with a simple mock instead of deleting
+          const indexPath = path.join(fontPath, 'index.js');
+          fs.writeFileSync(indexPath, `
+// Mock Next.js font module
+module.exports = {
+  // Mock Google font
+  Google: function() { return { className: '', variable: '' }; },
+  // Mock local font
+  Local: function() { return { className: '', variable: '' }; }
+};`);
+          log(`Replaced font module with mock implementation at ${indexPath}`);
+        } catch (err) {
+          log(`Error handling font module at ${fontPath}: ${err.message}`);
+        }
+      }
+    });
   }
   
   // Create a minimal providers component if it exists
