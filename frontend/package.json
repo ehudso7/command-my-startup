@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:clear": "rm -rf .next && next dev",
     "build": "next build --no-lint",
     "start": "next start",
     "lint": "eslint src/",
@@ -15,7 +16,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "vercel-build": "npm install --platform=linux --arch=x64 && next build --no-lint"
+    "vercel-build": "npm install --platform=linux --arch=x64 && npm install --no-save autoprefixer postcss tailwindcss && next build --no-lint"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -58,7 +59,7 @@
     "@types/react-dom": "^19",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.29.0",
-    "autoprefixer": "10.4.21",
+    "autoprefixer": "^10.4.21",
     "cypress": "^14.2.1",
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.2.4",
@@ -86,7 +87,7 @@
     "stripe": "17.7.0"
   },
   "engines": {
-    "node": "20.x",
+    "node": ">=20.x",
     "npm": ">=9.x"
   }
 }

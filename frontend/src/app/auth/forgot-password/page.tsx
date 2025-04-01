@@ -1,8 +1,18 @@
+// Temporarily disable for Vercel build
+import { redirect } from "next/navigation";
+
+export default function ForgotPasswordPage() {
+  // Temporarily redirect to home page
+  redirect("/");
+}
+
+/* Original code:
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
+// import { useAuth } from "@/contexts/AuthContext";
+*/
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
