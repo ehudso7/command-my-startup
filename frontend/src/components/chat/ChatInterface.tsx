@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { AVAILABLE_MODELS } from "@/lib/ai/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/lib/auth/hooks";
 import MarkdownRenderer from "@/components/ui/MarkdownRenderer";
 
 interface Message {

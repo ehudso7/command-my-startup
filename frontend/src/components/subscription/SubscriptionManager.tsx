@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/lib/auth/hooks";
 import { useToast } from "@/contexts/ToastContext";
 
 interface Plan {

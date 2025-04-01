@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/lib/auth/hooks";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { motion, AnimatePresence } from "framer-motion";
 

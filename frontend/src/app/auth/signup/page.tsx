@@ -1,19 +1,9 @@
-// Temporarily disable for Vercel build
-import { redirect } from "next/navigation";
-
-export default function SignupPage() {
-  // Temporarily redirect to home page
-  redirect("/");
-}
-
-/* Original code:
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-// import { useAuth } from "@/contexts/AuthContext";
-*/
+import { useAuth } from "@/lib/auth/hooks";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
