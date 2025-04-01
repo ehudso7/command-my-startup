@@ -1,4 +1,4 @@
-import openai
+from openai import AsyncOpenAI
 import anthropic
 from config import get_settings
 from typing import Dict, Any, Optional, List
@@ -6,7 +6,7 @@ from typing import Dict, Any, Optional, List
 settings = get_settings()
 
 # Initialize API clients
-openai.api_key = settings.openai_api_key
+openai_client = AsyncOpenAI(api_key=settings.openai_api_key)
 anthropic_client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
 
@@ -25,7 +25,7 @@ async def generate_with_openai(
     
     messages.append({"role": "user", "content": prompt})
     
-    response = await openai.ChatCompletion.acreate(
+    response = await openai_client.chat.completions.create(
         model=model,
         messages=messages,
         temperature=temperature,
@@ -37,7 +37,7 @@ async def generate_with_openai(
         "id": response.id,
         "content": response.choices[0].message.content,
         "model": model,
-        "created_at": response.created,
+        "created_at": response.created_at,
         "tokens_used": response.usage.total_tokens,
     }
 
