@@ -5,5 +5,22 @@
       "src": "frontend/package.json",
       "use": "@vercel/next"
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "headers": {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://analytics.vercel.app https://*.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.stripe.com; connect-src 'self' https://*.supabase.co https://api.commandmystartup.com https://api.openai.com https://api.anthropic.com https://*.stripe.com https://vitals.vercel-analytics.com;"
+      },
+      "continue": true
+    }
+  ],
+  "regions": ["iad1"],
+  "github": {
+    "enabled": true,
+    "silent": true
+  }
 }

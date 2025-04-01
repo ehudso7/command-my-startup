@@ -20,9 +20,9 @@ class Settings(BaseSettings):
     app_description: str = "Backend API for Command My Startup"
     
     # Authentication settings
-    jwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "development_secret_key")
+    jwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "")
     jwt_algorithm: str = "HS256"
-    jwt_access_token_expire_minutes: int = 30
+    jwt_access_token_expire_minutes: int = int(os.getenv("JWT_TOKEN_EXPIRE_MINUTES", "30"))
     
     # Database settings (Supabase)
     supabase_url: Optional[str] = os.getenv("SUPABASE_URL", "")
@@ -47,11 +47,11 @@ class Settings(BaseSettings):
     rate_limit_general: int = int(os.getenv("RATE_LIMIT_GENERAL", "60"))
     
     # CORS settings
-    cors_origins: List[str] = [
+    cors_origins: List[str] = os.getenv("CORS_ORIGINS", "").split(",") if os.getenv("CORS_ORIGINS") else [
         "http://localhost:3000",
         "https://command-my-startup.vercel.app",
-        "https://*.vercel.app",  # Allow all vercel preview deployments
-        "http://localhost:*",    # Allow any localhost port
+        "https://www.commandmystartup.com",
+        "https://commandmystartup.com",
     ]
     
     # Environment
@@ -80,6 +80,24 @@ class Settings(BaseSettings):
             logger.info(f"  {key}: {value}")
             
         logger.info(f"Rate limits (rpm): Auth={self.rate_limit_auth}, Command={self.rate_limit_command}, General={self.rate_limit_general}")
+        
+        # Security checks for production environment
+        if self.environment == "production":
+            missing_keys = []
+            
+            if not self.jwt_secret_key:
+                missing_keys.append("JWT_SECRET_KEY")
+                
+            if not self.supabase_url or not self.supabase_key:
+                missing_keys.append("SUPABASE_URL and/or SUPABASE_KEY")
+                
+            if not self.openai_api_key and not self.anthropic_api_key:
+                missing_keys.append("OPENAI_API_KEY and/or ANTHROPIC_API_KEY")
+                
+            if missing_keys:
+                error_message = f"CRITICAL SECURITY ERROR: Missing required environment variables in production: {', '.join(missing_keys)}"
+                logger.critical(error_message)
+                raise ValueError(error_message)
 
 
 @lru_cache()

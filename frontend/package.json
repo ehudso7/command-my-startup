@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:clear": "rm -rf .next && next dev",
+    "dev-polling": "next dev --watch",
     "build": "next build --no-lint",
     "start": "next start",
     "lint": "eslint src/",
