@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: simple-test-api
+    runtime: python
+    buildCommand: cd backend && pip install fastapi uvicorn
+    startCommand: cd backend && python -m uvicorn simple_server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    plan: starter
