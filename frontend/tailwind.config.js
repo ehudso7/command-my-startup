@@ -1,31 +1,6 @@
 /* eslint-env node */  // Ensure ESLint treats this as a Node.js environment
 
-// Use a try-catch block for more resilient loading
-let fontFamily;
-try {
-  const defaultTheme = require('tailwindcss/defaultTheme');
-  fontFamily = defaultTheme.fontFamily;
-} catch (error) {
-  console.warn('Could not load tailwindcss/defaultTheme, using fallback font families');
-  fontFamily = {
-    sans: [
-      'ui-sans-serif',
-      'system-ui',
-      '-apple-system',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      'Roboto',
-      '"Helvetica Neue"',
-      'Arial',
-      '"Noto Sans"',
-      'sans-serif',
-      '"Apple Color Emoji"',
-      '"Segoe UI Emoji"',
-      '"Segoe UI Symbol"',
-      '"Noto Color Emoji"',
-    ]
-  };
-}
+const { fontFamily } = require('tailwindcss/defaultTheme');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
