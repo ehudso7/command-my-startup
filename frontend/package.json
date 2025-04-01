@@ -16,7 +16,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "vercel-build": "cross-env VERCEL=1 npm install --no-package-lock --no-audit && node install-css.js && next build --no-lint"
+    "vercel-build": "cross-env VERCEL=1 node fix-vercel-css.js && next build --no-lint"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

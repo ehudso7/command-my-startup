@@ -5,9 +5,7 @@
       "src": "frontend/package.json",
       "use": "@vercel/next",
       "config": {
-        "NODE_VERSION": "20.x",
-        "installCommand": "npm install --no-package-lock --no-audit && node install-css.js",
-        "buildCommand": "cd frontend && npm run vercel-build"
+        "NODE_VERSION": "20.x"
       }
     }
   ],
