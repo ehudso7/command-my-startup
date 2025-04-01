@@ -16,7 +16,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "vercel-build": "npm install --platform=linux --arch=x64 && npm install --no-save autoprefixer postcss tailwindcss && next build --no-lint"
+    "vercel-build": "cross-env VERCEL=1 npm install --no-package-lock --no-audit && node install-css.js && next build --no-lint"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -29,11 +29,14 @@
     "@supabase/supabase-js": "^2.49.4",
     "@tailwindcss/typography": "0.5.16",
     "@vercel/analytics": "^1.5.0",
+    "autoprefixer": "^10.4.21",
     "axios": "^1.8.4",
     "clsx": "2.1.1",
+    "cross-env": "^7.0.3",
     "framer-motion": "^12.6.2",
     "next": "^15.2.4",
     "openai": "^4.90.0",
+    "postcss": "8.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-dropzone": "^14.3.8",
@@ -43,6 +46,7 @@
     "react-use": "^17.6.0",
     "stripe": "^17.7.0",
     "tailwind-merge": "3.0.2",
+    "tailwindcss": "3.4.1",
     "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },
@@ -59,7 +63,6 @@
     "@types/react-dom": "^19",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.29.0",
-    "autoprefixer": "^10.4.21",
     "cypress": "^14.2.1",
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.2.4",
@@ -71,9 +74,7 @@
     "globals": "^16.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "postcss": "8.5.3",
     "prettier": "^3.5.3",
-    "tailwindcss": "3.4.1",
     "typescript": "^5",
     "typescript-eslint": "^8.28.0"
   },
