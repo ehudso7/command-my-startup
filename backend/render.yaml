@@ -3,7 +3,8 @@ services:
     name: command-my-startup-api
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: cd /opt/render/project/src && uvicorn main:app --host 0.0.0.0 --port $PORT
+    rootDir: backend
     envVars:
       - key: ENVIRONMENT
         value: production
