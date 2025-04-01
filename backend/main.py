@@ -8,7 +8,8 @@ from middleware import (
     http_exception_handler, 
     validation_exception_handler, 
     internal_exception_handler,
-    RequestValidationMiddleware
+    RequestValidationMiddleware,
+    RateLimiterMiddleware
 )
 import logging
 
@@ -49,6 +50,14 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+# Add rate limiter middleware
+app.add_middleware(
+    RateLimiterMiddleware,
+    auth_routes_rpm=settings.rate_limit_auth,
+    command_routes_rpm=settings.rate_limit_command,
+    general_routes_rpm=settings.rate_limit_general
 )
 
 # Add request validation middleware

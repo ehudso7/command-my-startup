@@ -4,4 +4,8 @@ from middleware.error_handler import (
     validation_exception_handler,
     internal_exception_handler
 )
-from middleware.request_validator import RequestValidationMiddleware
+from middleware.request_validator import (
+    RequestValidationMiddleware,
+    APIKeyUserDependency
+)
+from middleware.rate_limiter import RateLimiterMiddleware

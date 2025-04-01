@@ -1,23 +1,23 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { v4 as uuidv4 } from "uuid";
-import { sendMessage } from "@/lib/ai/client";
+import { executeCommand } from "@/lib/api";
 
 export async function POST(request: Request) {
   try {
     const supabase = createClient();
 
-    // Get current user
+    // Get current user and session
     const {
-      data: { user },
+      data: { user, session },
     } = await supabase.auth.getUser();
 
-    if (!user) {
+    if (!user || !session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Parse request body
-    const { projectId, prompt, model = "gpt-4o" } = await request.json();
+    const { projectId, prompt, model = "gpt-3.5-turbo", systemPrompt, temperature, maxTokens } = await request.json();
 
     // Validate project if provided
     if (projectId) {
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Save command to database
+    // Save command to database with pending status
     const commandId = uuidv4();
     const { error: commandError } = await supabase.from("commands").insert({
       id: commandId,
@@ -54,34 +54,50 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create system prompt
-    const systemPrompt = `You are an AI assistant for Command My Startup, a platform that helps entrepreneurs build and grow their businesses. 
-    You are responsible for understanding and executing natural language commands from users.
-    Focus on providing actionable steps, clear explanations, and useful resources.
-    For technical tasks, provide code snippets or detailed implementation guides when appropriate.
-    Format your response in markdown for readability.`;
+    // Create default system prompt if none provided
+    const defaultSystemPrompt = systemPrompt || 
+      `You are an AI assistant for Command My Startup, a platform that helps entrepreneurs build and grow their businesses. 
+      You are responsible for understanding and executing natural language commands from users.
+      Focus on providing actionable steps, clear explanations, and useful resources.
+      For technical tasks, provide code snippets or detailed implementation guides when appropriate.
+      Format your response in markdown for readability.`;
 
-    // Call AI service
-    const response = await sendMessage({
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: prompt },
-      ],
+    // Call backend API instead of directly calling AI services
+    const { data: responseData, error: apiError } = await executeCommand(
+      prompt,
       model,
-      temperature: 0.7,
-      maxTokens: 4000,
-      user: user.id,
-    });
+      defaultSystemPrompt,
+      temperature || 0.7,
+      maxTokens || 4000
+    );
 
-    // Update command with response
+    if (apiError) {
+      // Update command with error status
+      await supabase
+        .from("commands")
+        .update({
+          status: "failed",
+          metadata: {
+            error: apiError.message
+          },
+        })
+        .eq("id", commandId);
+
+      return NextResponse.json(
+        { error: apiError.message },
+        { status: apiError.status || 500 },
+      );
+    }
+
+    // Update command with response from backend
     const { error: updateError } = await supabase
       .from("commands")
       .update({
-        response: response.content,
+        response: responseData?.content,
         status: "completed",
         metadata: {
-          tokens: response.usage,
-          provider: response.provider,
+          tokens_used: responseData?.tokens_used,
+          model: responseData?.model,
         },
       })
       .eq("id", commandId);
@@ -92,9 +108,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       id: commandId,
-      content: response.content,
-      model: response.model,
-      usage: response.usage,
+      content: responseData?.content,
+      model: responseData?.model,
+      created_at: responseData?.created_at,
+      tokens_used: responseData?.tokens_used
     });
   } catch (error: any) {
     console.error("Command execution error:", error);

@@ -3,19 +3,16 @@ services:
     name: command-my-startup-api
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: cd /opt/render/project/src && uvicorn main:app --host 0.0.0.0 --port $PORT
-    rootDir: backend
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: ENVIRONMENT
         value: production
-      - key: PYTHONPATH
-        value: .
+      - key: JWT_SECRET_KEY
+        sync: false
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_KEY
         sync: false
-      - key: JWT_SECRET_KEY
-        generateValue: true
       - key: OPENAI_API_KEY
         sync: false
       - key: ANTHROPIC_API_KEY
@@ -26,4 +23,3 @@ services:
         sync: false
     healthCheckPath: /health
     autoDeploy: true
-    plan: starter

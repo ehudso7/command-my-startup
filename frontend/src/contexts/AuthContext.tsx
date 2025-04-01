@@ -15,7 +15,7 @@ import {
   logoutUser,
   refreshAuthToken,
   getUserProfile,
-} from "@/lib/api/backend";
+} from "@/lib/api";
 import { AuthContextType } from "@/lib/auth/types";
 
 // Create context with default values

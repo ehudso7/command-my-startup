@@ -2,13 +2,49 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 
+// Backend API URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export async function POST(request: Request) {
   try {
     const { email, password, fullName } = await request.json();
 
     const supabase = createClient();
 
-    // Create user in Supabase Auth
+    // First, try to register with our backend API
+    let backendRegistered = false;
+
+    try {
+      // The backend endpoint is at /auth/register not /api/auth/register
+      const backendResponse = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          full_name: fullName,
+        }),
+        credentials: "include",
+      });
+
+      if (backendResponse.ok) {
+        console.log("User registered with backend successfully");
+        backendRegistered = true;
+        // Parse the backend response to use in our response
+        const backendData = await backendResponse.json();
+        console.log("Backend registration data:", backendData);
+      } else {
+        const errorText = await backendResponse.text();
+        console.error(`Failed to register with backend: ${errorText}. Status: ${backendResponse.status}. Falling back to Supabase.`);
+      }
+    } catch (backendError) {
+      console.error("Error connecting to backend:", backendError);
+      // Continue with Supabase registration
+    }
+
+    // Create user in Supabase Auth as a fallback or parallel auth system
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -19,7 +55,7 @@ export async function POST(request: Request) {
       },
     });
 
-    if (authError) {
+    if (authError && !backendRegistered) {
       return NextResponse.json({ error: authError.message }, { status: 400 });
     }
 
@@ -27,7 +63,7 @@ export async function POST(request: Request) {
     const cookieStore = cookies();
     const referralCode = cookieStore.get("referral_code")?.value;
 
-    if (referralCode && authData.user) {
+    if (referralCode && authData?.user) {
       // Look up the referrer by code
       const { data: referrer } = await supabase
         .from("users")
@@ -75,7 +111,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       message:
         "Registration successful. Please check your email for verification.",
-      user: authData.user,
+      user: authData?.user || { email },
     });
   } catch (error: any) {
     return NextResponse.json(

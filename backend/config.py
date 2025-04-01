@@ -38,10 +38,20 @@ class Settings(BaseSettings):
     stripe_api_key: Optional[str] = os.getenv("STRIPE_API_KEY", "")
     stripe_webhook_secret: Optional[str] = os.getenv("STRIPE_WEBHOOK_SECRET", "")
     
+    # Redis settings for rate limiting
+    redis_url: Optional[str] = os.getenv("REDIS_URL", "")
+    
+    # Rate limiting settings (requests per minute)
+    rate_limit_auth: int = int(os.getenv("RATE_LIMIT_AUTH", "20"))
+    rate_limit_command: int = int(os.getenv("RATE_LIMIT_COMMAND", "30"))
+    rate_limit_general: int = int(os.getenv("RATE_LIMIT_GENERAL", "60"))
+    
     # CORS settings
     cors_origins: List[str] = [
         "http://localhost:3000",
         "https://command-my-startup.vercel.app",
+        "https://*.vercel.app",  # Allow all vercel preview deployments
+        "http://localhost:*",    # Allow any localhost port
     ]
     
     # Environment
@@ -62,11 +72,14 @@ class Settings(BaseSettings):
             "OpenAI API Key": "✓" if self.openai_api_key else "✗",
             "Anthropic API Key": "✓" if self.anthropic_api_key else "✗",
             "Stripe API Key": "✓" if self.stripe_api_key else "✗",
+            "Redis URL": "✓" if self.redis_url else "✗",
         }
         
         logger.info("Configuration loaded:")
         for key, value in config_status.items():
             logger.info(f"  {key}: {value}")
+            
+        logger.info(f"Rate limits (rpm): Auth={self.rate_limit_auth}, Command={self.rate_limit_command}, General={self.rate_limit_general}")
 
 
 @lru_cache()

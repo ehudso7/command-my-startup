@@ -2,17 +2,13 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { v4 as uuidv4 } from "uuid";
 import { sendMessage, hasModelAccess, AVAILABLE_MODELS } from "@/lib/ai/client";
+import { executeCommand } from "@/lib/api";
+
+// Backend API URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export async function POST(request: Request) {
   try {
-    // Validate OpenAI API key
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json(
-        { error: "OpenAI API key not configured" },
-        { status: 500 },
-      );
-    }
-
     const supabase = createClient();
 
     // Get current user
@@ -43,7 +39,8 @@ export async function POST(request: Request) {
     } = await request.json();
 
     // Validate model
-    if (!AVAILABLE_MODELS.includes(model)) {
+    const modelObj = AVAILABLE_MODELS.find(m => m.id === model);
+    if (!modelObj) {
       return NextResponse.json(
         { error: "Invalid model specified" },
         { status: 400 },
@@ -70,7 +67,7 @@ export async function POST(request: Request) {
         .insert({
           user_id: user.id,
           project_id: projectId || null,
-          title: messages[0]?.content.substring(0, 50) || "New conversation",
+          title: messages[messages.length - 1]?.content?.substring(0, 50) || "New conversation",
         })
         .select()
         .single();
@@ -101,21 +98,64 @@ export async function POST(request: Request) {
       );
     }
 
-    // Call AI service with error handling
-    let response;
+    // Get system message
+    const systemMessage = messages.find(msg => msg.role === "system")?.content || 
+      `You are a helpful AI assistant for Command My Startup, a platform that helps entrepreneurs build and grow their businesses. 
+      Provide clear, concise, and helpful responses. You can use markdown formatting in your responses.`;
+
+    // Extract the latest user message
+    const userMessage = messages[messages.length - 1].content;
+
+    // Try to call our backend API first
+    let backendResponse = null;
+    let aiResponse = null;
+
     try {
-      response = await sendMessage({
-        messages,
+      // Call our backend API
+      const { data, error } = await executeCommand(
+        userMessage,
         model,
+        systemMessage,
         temperature,
-        maxTokens: 2000,
-        user: user.id,
-      });
-    } catch (error) {
-      console.error("AI service error:", error);
+        2000
+      );
+
+      if (data && !error) {
+        backendResponse = data;
+        console.log("Successfully used backend API for command", data);
+      }
+    } catch (backendError) {
+      console.error("Error calling backend API:", backendError);
+      // Fallback to direct AI service call
+    }
+
+    // If backend failed, fallback to direct AI service
+    if (!backendResponse) {
+      try {
+        console.log("Using direct AI service as fallback");
+        aiResponse = await sendMessage({
+          messages,
+          model,
+          temperature,
+          maxTokens: 2000,
+          user: user.id,
+        });
+      } catch (error) {
+        console.error("AI service error:", error);
+        return NextResponse.json(
+          { error: "Failed to communicate with AI service" },
+          { status: 502 },
+        );
+      }
+    }
+
+    // Use the response from either backend or direct AI call
+    const response = backendResponse || aiResponse;
+
+    if (!response) {
       return NextResponse.json(
-        { error: "Failed to communicate with AI service" },
-        { status: 502 },
+        { error: "Failed to generate response from any AI source" },
+        { status: 500 },
       );
     }
 
@@ -126,10 +166,10 @@ export async function POST(request: Request) {
       conversation_id: actualConversationId,
       content: response.content,
       sender: "assistant",
-      model: response.model,
+      model: response.model || model,
       metadata: {
-        tokens: response.usage,
-        provider: response.provider,
+        tokens_used: response.tokens_used || response.usage,
+        source: backendResponse ? "backend" : "direct",
       },
     });
 
@@ -143,24 +183,48 @@ export async function POST(request: Request) {
     // Update conversation title if it's a new conversation
     if (!conversationId) {
       try {
-        const titleResponse = await sendMessage({
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are a helpful assistant. Generate a very short title (max 6 words) for this conversation based on the user's first message.",
-            },
-            { role: "user", content: messages[messages.length - 1].content },
-          ],
-          model: "gpt-3.5-turbo",
-          temperature: 0.7,
-          maxTokens: 50,
-          user: user.id,
-        });
+        // Try to use backend for title generation
+        let titleContent = null;
+        
+        try {
+          const { data } = await executeCommand(
+            messages[messages.length - 1].content,
+            "gpt-3.5-turbo",
+            "Generate a very short title (max 6 words) for this conversation based on the user's message.",
+            0.7,
+            50
+          );
+          
+          if (data) {
+            titleContent = data.content;
+          }
+        } catch (e) {
+          console.error("Error using backend for title generation:", e);
+        }
+        
+        // Fallback to direct AI
+        if (!titleContent) {
+          const titleResponse = await sendMessage({
+            messages: [
+              {
+                role: "system",
+                content:
+                  "Generate a very short title (max 6 words) for this conversation based on the user's message.",
+              },
+              { role: "user", content: messages[messages.length - 1].content },
+            ],
+            model: "gpt-3.5-turbo",
+            temperature: 0.7,
+            maxTokens: 50,
+            user: user.id,
+          });
+          
+          titleContent = titleResponse.content;
+        }
 
         await supabase
           .from("conversations")
-          .update({ title: titleResponse.content.replace(/["']/g, "") })
+          .update({ title: titleContent.replace(/["']/g, "") })
           .eq("id", actualConversationId);
       } catch (error) {
         console.error("Failed to generate conversation title:", error);
@@ -169,11 +233,11 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      id: response.id,
+      id: response.id || aiMessageId,
       conversationId: actualConversationId,
       content: response.content,
-      model: response.model,
-      usage: response.usage,
+      model: response.model || model,
+      usage: response.tokens_used || response.usage,
     });
   } catch (error: any) {
     console.error("AI chat error:", error);

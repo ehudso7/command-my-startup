@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/lib/auth/hooks";
 import { useToast } from "@/contexts/ToastContext";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import ReferralForm from "@/components/referrals/ReferralForm";
