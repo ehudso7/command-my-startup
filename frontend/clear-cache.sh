@@ -1,21 +1,34 @@
 #!/bin/bash
+# Script to completely clean Next.js cache and node_modules
 
-# Stop any running Next.js dev server
-echo "Stopping any running Next.js processes..."
-pkill -f "next dev" || echo "No Next.js processes found"
+echo "🧹 Cleaning up Next.js project..."
 
-# Clear Next.js cache
-echo "Clearing Next.js cache..."
+# Remove build artifacts
+echo "Removing .next directory..."
 rm -rf .next
-rm -rf node_modules/.cache
 
-# Clear browser cache for localhost:3000
-echo "Please clear your browser cache for localhost:3000"
+# Remove Node modules
+echo "Removing node_modules directory..."
+rm -rf node_modules
 
-# Install dependencies
-echo "Reinstalling dependencies..."
-npm install
+# Clear npm cache
+echo "Clearing npm cache..."
+npm cache clean --force
 
-# Start dev server
-echo "Starting dev server..."
-npm run dev:clear
+# Remove package-lock.json for fresh install
+echo "Removing package-lock.json..."
+rm -f package-lock.json
+
+# Clean up potential temporary files
+echo "Removing any temp files..."
+rm -rf .cache .vercel/output .vercel/cache
+
+# Clean up TypeScript build info
+echo "Removing TypeScript build info..."
+rm -f tsconfig.tsbuildinfo
+
+# Clean up any potential swap files
+echo "Removing swap files..."
+find . -name "*.sw[a-p]" -delete
+
+echo "✅ Cleanup complete! Run 'npm install' to reinstall dependencies."

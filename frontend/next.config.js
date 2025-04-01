@@ -33,6 +33,9 @@ const nextConfig = {
   
   transpilePackages: [],
   output: 'standalone',
+  
+  // Fix swcMinify issues
+  swcMinify: false,
 };
 
 module.exports = nextConfig;

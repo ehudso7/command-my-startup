@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs"; // Updated import
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
@@ -15,14 +15,8 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    // Updated Supabase client creation
-    const supabase = createMiddlewareClient(
-      { req, res },
-      {
-        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      },
-    );
+    // Create client with compatible interface for auth-helpers-nextjs v0.8.7
+    const supabase = createMiddlewareClient({ req, res });
 
     // Get session
     const {
