@@ -94,8 +94,89 @@ def read_root():
     return {"message": f"Welcome to {settings.app_name}"}
 
 @app.get("/health")
-def health_check():
-    return {"status": "ok"}
+async def health_check():
+    """Health check endpoint for monitoring and deployment verification"""
+    from lib.supabase import get_supabase_client
+    import os
+    import time
+    
+    health_data = {
+        "status": "ok",
+        "timestamp": time.time(),
+        "environment": settings.environment,
+        "version": settings.app_version,
+        "services": {}
+    }
+    
+    # Check Supabase connection
+    try:
+        supabase = get_supabase_client()
+        # Make a simple query
+        response = supabase.table("users").select("count(*)", count="exact").execute()
+        health_data["services"]["database"] = {
+            "status": "ok",
+            "message": f"Connected successfully"
+        }
+    except Exception as e:
+        health_data["services"]["database"] = {
+            "status": "error",
+            "message": str(e)
+        }
+        health_data["status"] = "degraded"
+    
+    # Check OpenAI if key exists
+    if settings.openai_api_key:
+        try:
+            import openai
+            client = openai.OpenAI(api_key=settings.openai_api_key)
+            # Just check if the key seems valid (don't make an actual API call)
+            health_data["services"]["openai"] = {
+                "status": "configured",
+                "message": "API key is configured"
+            }
+        except Exception as e:
+            health_data["services"]["openai"] = {
+                "status": "error",
+                "message": str(e)
+            }
+            health_data["status"] = "degraded"
+    else:
+        health_data["services"]["openai"] = {
+            "status": "not_configured",
+            "message": "API key not set"
+        }
+    
+    # Check Anthropic if key exists
+    if settings.anthropic_api_key:
+        try:
+            import anthropic
+            client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+            # Just check if the key seems valid (don't make an actual API call)
+            health_data["services"]["anthropic"] = {
+                "status": "configured",
+                "message": "API key is configured"
+            }
+        except Exception as e:
+            health_data["services"]["anthropic"] = {
+                "status": "error",
+                "message": str(e)
+            }
+            health_data["status"] = "degraded"
+    else:
+        health_data["services"]["anthropic"] = {
+            "status": "not_configured",
+            "message": "API key not set"
+        }
+    
+    # In non-production environments, return detailed health data
+    if settings.environment != "production":
+        return health_data
+    
+    # In production, only return simple status to avoid leaking information
+    return {
+        "status": health_data["status"],
+        "version": settings.app_version
+    }
 
 @app.on_event("startup")
 async def startup_event():
