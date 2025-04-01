@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 // Backend API URL
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+// Mark this route as dynamic to handle cookies/auth
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();

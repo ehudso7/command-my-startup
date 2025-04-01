@@ -7,6 +7,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-03-30",
 });
 
+// Mark this route as dynamic to handle cookies/auth
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const supabase = createClient();

@@ -31,6 +31,9 @@ const PRICE_ID_TO_TIER: Record<string, string> = {
   price_ZZZ: "pro",
 };
 
+// Mark this route as dynamic to handle cookies/auth
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   const body = await request.text();
   const signature = headers().get("stripe-signature") as string;

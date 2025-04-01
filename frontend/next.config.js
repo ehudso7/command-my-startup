@@ -36,6 +36,11 @@ const nextConfig = {
   
   // Fix swcMinify issues
   swcMinify: false,
+  
+  // Disable static optimization for all pages to avoid Server Component serialization issues
+  experimental: {
+    serverComponentsExternalPackages: ['@supabase/ssr', '@supabase/supabase-js'],
+  },
 };
 
 module.exports = nextConfig;
