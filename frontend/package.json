@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "dev:clear": "rm -rf .next && next dev",
-    "dev-polling": "next dev --watch",
+    "dev:hot": "FAST_REFRESH=true next dev",
+    "dev:optimal": "chmod +x ./dev.sh && ./dev.sh",
+    "dev-polling": "NEXT_WEBPACK_POLLING=1 next dev --watch",
     "build": "next build --no-lint",
     "start": "next start",
     "lint": "eslint src/",
