@@ -43,7 +43,7 @@ async def generate_with_openai(
     if openai_client is None:
         logger.info(f"Using mock OpenAI response for prompt: {prompt[:30]}...")
         import uuid
-        
+
         # Create a simple mock response
         return {
             "id": f"mockid-{uuid.uuid4()}",
@@ -52,20 +52,20 @@ async def generate_with_openai(
             "created_at": datetime.now().isoformat(),
             "tokens_used": 10,
         }
-    
+
     # Real API call if client is available
     messages = []
-    
+
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})
-    
+
     messages.append({"role": "user", "content": prompt})
-    
+
     try:
         # Run the synchronous client in a thread pool to make it async-compatible
         import asyncio
         from concurrent.futures import ThreadPoolExecutor
-        
+
         loop = asyncio.get_event_loop()
         with ThreadPoolExecutor() as pool:
             response = await loop.run_in_executor(
@@ -76,9 +76,9 @@ async def generate_with_openai(
                     temperature=temperature,
                     max_tokens=max_tokens,
                     n=1,
-                )
+                ),
             )
-        
+
         return {
             "id": response.id,
             "content": response.choices[0].message.content,
@@ -90,6 +90,7 @@ async def generate_with_openai(
         logger.error(f"Error calling OpenAI API: {str(e)}")
         # Fallback to mock response
         import uuid
+
         return {
             "id": f"error-{uuid.uuid4()}",
             "content": f"Error generating response: {str(e)}",
@@ -112,7 +113,7 @@ async def generate_with_anthropic(
         logger.info(f"Using mock Anthropic response for prompt: {prompt[:30]}...")
         from datetime import datetime
         import uuid
-        
+
         # Create a simple mock response
         return {
             "id": f"mockid-{uuid.uuid4()}",
@@ -121,15 +122,15 @@ async def generate_with_anthropic(
             "created_at": datetime.now().isoformat(),
             "tokens_used": None,
         }
-    
+
     # Real API call if client is available
     system = system_prompt if system_prompt else "You are a helpful AI assistant."
-    
+
     try:
         # Anthropic client doesn't have async methods, run in a separate thread
         import asyncio
         from concurrent.futures import ThreadPoolExecutor
-        
+
         loop = asyncio.get_event_loop()
         with ThreadPoolExecutor() as pool:
             response = await loop.run_in_executor(
@@ -139,16 +140,18 @@ async def generate_with_anthropic(
                     max_tokens=max_tokens or 1024,
                     temperature=temperature,
                     system=system,
-                    messages=[{"role": "user", "content": prompt}]
-                )
+                    messages=[{"role": "user", "content": prompt}],
+                ),
             )
-        
+
         return {
             "id": response.id,
             "content": response.content[0].text,
             "model": model,
             "created_at": response.created_at,
-            "tokens_used": response.usage.input_tokens + response.usage.output_tokens if hasattr(response, 'usage') else None,
+            "tokens_used": response.usage.input_tokens + response.usage.output_tokens
+            if hasattr(response, "usage")
+            else None,
         }
     except Exception as e:
         logger.error(f"Error calling Anthropic API: {str(e)}")

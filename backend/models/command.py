@@ -13,10 +13,16 @@ class AIModel(str, Enum):
 class CommandRequest(BaseModel):
     prompt: str = Field(..., description="The command prompt to execute")
     model: AIModel = Field(default=AIModel.GPT_3_5, description="AI model to use")
-    system_prompt: Optional[str] = Field(None, description="Optional system prompt for instruction")
-    temperature: Optional[float] = Field(0.7, ge=0, le=1, description="Temperature for generation")
+    system_prompt: Optional[str] = Field(
+        None, description="Optional system prompt for instruction"
+    )
+    temperature: Optional[float] = Field(
+        0.7, ge=0, le=1, description="Temperature for generation"
+    )
     max_tokens: Optional[int] = Field(None, description="Maximum tokens to generate")
-    context: Optional[Dict[str, Any]] = Field(None, description="Additional context for the command")
+    context: Optional[Dict[str, Any]] = Field(
+        None, description="Additional context for the command"
+    )
 
 
 class CommandResponse(BaseModel):
@@ -25,6 +31,6 @@ class CommandResponse(BaseModel):
     model: str = Field(..., description="Model used for generation")
     created_at: str = Field(..., description="Timestamp of creation")
     tokens_used: Optional[int] = Field(None, description="Number of tokens used")
-    
+
     class Config:
         from_attributes = True

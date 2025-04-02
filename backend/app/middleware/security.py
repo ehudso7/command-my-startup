@@ -8,35 +8,43 @@ import logging
 # Set up logger
 logger = logging.getLogger("security")
 
+
 class SecurityMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Process the request
         response = await call_next(request)
-        
+
         # Add comprehensive security headers
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
+        response.headers[
+            "Strict-Transport-Security"
+        ] = "max-age=63072000; includeSubDomains; preload"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
-        
+        response.headers[
+            "Permissions-Policy"
+        ] = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+
         # Set appropriate CSP header based on environment
         csp_value = "default-src 'self'; connect-src 'self' https://*.supabase.co; img-src 'self' data:; script-src 'self'"
         response.headers["Content-Security-Policy"] = csp_value
-        
+
         # Add cache control headers for API routes
         if request.url.path.startswith("/api/"):
-            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-        
+            response.headers[
+                "Cache-Control"
+            ] = "no-store, no-cache, must-revalidate, max-age=0"
+
         return response
+
 
 class RequestIdMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Add unique request ID for tracking
         request_id = secrets.token_hex(8)
         request.state.request_id = request_id
-        
+
         # Process the request
         start_time = time.time()
         try:
@@ -53,10 +61,11 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
                 f"status_code={status_code} duration={process_time:.3f}s"
             )
 
+
 def setup_security(app: FastAPI, settings):
     # Add Request ID middleware first
     app.add_middleware(RequestIdMiddleware)
-    
+
     # Add CORS middleware with specific configuration
     app.add_middleware(
         CORSMiddleware,
@@ -67,6 +76,6 @@ def setup_security(app: FastAPI, settings):
         expose_headers=["X-Request-ID"],
         max_age=86400,  # 24 hours
     )
-    
+
     # Add security headers middleware
     app.add_middleware(SecurityMiddleware)

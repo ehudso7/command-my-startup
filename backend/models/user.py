@@ -19,7 +19,7 @@ class UserLogin(BaseModel):
 class UserResponse(UserBase):
     id: str = Field(..., description="User unique identifier")
     created_at: str = Field(..., description="User creation timestamp")
-    
+
     class Config:
         from_attributes = True
 

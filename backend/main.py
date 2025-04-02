@@ -5,11 +5,11 @@ from prometheus_client import Counter, Histogram, make_asgi_app
 from routes import api_router
 from config import get_settings
 from middleware import (
-    http_exception_handler, 
-    validation_exception_handler, 
+    http_exception_handler,
+    validation_exception_handler,
     internal_exception_handler,
     RequestValidationMiddleware,
-    RateLimiterMiddleware
+    RateLimiterMiddleware,
 )
 import logging
 
@@ -25,22 +25,18 @@ settings = get_settings()
 
 # Create the FastAPI app
 app = FastAPI(
-    title=settings.app_name, 
+    title=settings.app_name,
     version=settings.app_version,
-    description=settings.app_description
+    description=settings.app_description,
 )
 
 # Prometheus metrics
 REQUEST_COUNT = Counter(
-    'http_requests_total',
-    'Total HTTP Requests',
-    ['method', 'endpoint', 'status_code']
+    "http_requests_total", "Total HTTP Requests", ["method", "endpoint", "status_code"]
 )
 
 REQUEST_LATENCY = Histogram(
-    'http_request_duration_seconds',
-    'HTTP Request Latency',
-    ['method', 'endpoint']
+    "http_request_duration_seconds", "HTTP Request Latency", ["method", "endpoint"]
 )
 
 # Configure CORS middleware
@@ -57,14 +53,16 @@ app.add_middleware(
     RateLimiterMiddleware,
     auth_routes_rpm=settings.rate_limit_auth,
     command_routes_rpm=settings.rate_limit_command,
-    general_routes_rpm=settings.rate_limit_general
+    general_routes_rpm=settings.rate_limit_general,
 )
 
 # Add request validation middleware
 app.add_middleware(RequestValidationMiddleware)
 
 # Add exception handlers
-app.add_exception_handler(status.HTTP_500_INTERNAL_SERVER_ERROR, internal_exception_handler)
+app.add_exception_handler(
+    status.HTTP_500_INTERNAL_SERVER_ERROR, internal_exception_handler
+)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(status.HTTP_404_NOT_FOUND, http_exception_handler)
 
@@ -72,36 +70,43 @@ app.add_exception_handler(status.HTTP_404_NOT_FOUND, http_exception_handler)
 metrics_app = make_asgi_app()
 app.mount("/metrics", metrics_app)
 
+
 @app.middleware("http")
 async def monitor_requests(request, call_next):
     method = request.method
     path = request.url.path
-    
+
     # Record request latency
     with REQUEST_LATENCY.labels(method=method, endpoint=path).time():
         response = await call_next(request)
-    
+
     # Count requests
-    REQUEST_COUNT.labels(method=method, endpoint=path, status_code=response.status_code).inc()
-    
+    REQUEST_COUNT.labels(
+        method=method, endpoint=path, status_code=response.status_code
+    ).inc()
+
     return response
+
 
 # Include API routes
 app.include_router(api_router)
+
 
 @app.get("/")
 def read_root():
     return {"message": f"Welcome to {settings.app_name}"}
 
+
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
 
 @app.on_event("startup")
 async def startup_event():
     """Initialization tasks on app startup"""
     logger.info(f"Starting {settings.app_name} in {settings.environment} mode")
-    
+
     # Validate required environment variables on startup
     missing_vars = []
     if settings.environment == "production":
@@ -111,21 +116,26 @@ async def startup_event():
             "SUPABASE_KEY",
             "OPENAI_API_KEY",
             "ANTHROPIC_API_KEY",
-            "STRIPE_API_KEY"
+            "STRIPE_API_KEY",
         ]
-        
+
         for var in required_vars:
             if not getattr(settings, var.lower(), None):
                 missing_vars.append(var)
-        
+
         if missing_vars:
-            logger.warning(f"Missing required environment variables: {', '.join(missing_vars)}")
+            logger.warning(
+                f"Missing required environment variables: {', '.join(missing_vars)}"
+            )
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup tasks on app shutdown"""
     logger.info(f"Shutting down {settings.app_name}")
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
