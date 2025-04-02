@@ -11,8 +11,9 @@ module.exports = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-
+  
   theme: {
     container: {
       center: true,
@@ -101,6 +102,8 @@ module.exports = {
       },
     },
   },
-  plugins: [require('@tailwindcss/typography')],
+  
+  plugins: [
+    require('@tailwindcss/typography')
+  ],
 };
-

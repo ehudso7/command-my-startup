@@ -28,6 +28,9 @@ build/
 dist/
 .turbo/
 .vercel/
+frontend/frontend@0.1.0
+frontend/next/
+frontend/.next/
 
 # Logs
 *.log
@@ -60,3 +63,4 @@ tmp/
 .npmrc
 .yarnrc
 .pnpm-store/
+.vercel
