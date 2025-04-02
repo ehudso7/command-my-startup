@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 from typing import Optional
+import os
 
 from fastapi import (APIRouter, Cookie, Depends, HTTPException, Request,
                      Response, status)
@@ -169,7 +170,7 @@ async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depen
 
         return TokenResponse(
             access_token=access_token,
-            token_type="bearer",
+            token_type=os.getenv("TOKEN_TYPE", "bearer"),  # Use environment variable for token type
             expires_in=settings.jwt_access_token_expire_minutes * 60,
             refresh_token=refresh_token,
             user=UserResponse(
@@ -250,7 +251,7 @@ async def refresh_token(
 
         return TokenResponse(
             access_token=access_token,
-            token_type="bearer",
+            token_type=os.getenv("TOKEN_TYPE", "bearer"),  # Use environment variable for token type
             expires_in=settings.jwt_access_token_expire_minutes * 60,
             refresh_token=refresh_token,
             user=UserResponse(
@@ -307,3 +308,4 @@ async def request_password_reset(email: EmailStr):
     except Exception as e:
         logger.error(f"Password reset error: {str(e)}")
         return {"message": "Password reset instructions sent if email exists"}
+
