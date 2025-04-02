@@ -1,20 +1,19 @@
+
 "use client";
 
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ToastProvider } from "@/contexts/ToastContext";
-import { UploadProvider } from "@/contexts/UploadProvider";
+// Simplified providers wrapper for production build
+import { Analytics } from "@vercel/analytics/react";
+import { ReactNode } from "react";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+type ProvidersProps = {
+  children: ReactNode;
+};
+
+export function Providers({ children }: ProvidersProps) {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ToastProvider>
-          <UploadProvider>
-            {children}
-          </UploadProvider>
-        </ToastProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <>
+      {children}
+      <Analytics />
+    </>
   );
 }
