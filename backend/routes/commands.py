@@ -4,11 +4,11 @@ from typing import List, Optional
 import logging
 from datetime import datetime
 
-from backend.app.auth.jwt import get_current_user, TokenData
-from backend.app.lib.ai.openai_client import OpenAIClient
-from backend.app.lib.ai.anthropic_client import AnthropicClient
-from backend.app.config import settings
-from backend.app.lib.supabase.client import get_supabase_client
+from app.auth.jwt import get_current_user, TokenData
+from app.lib.ai.openai_client import OpenAIClient
+from app.lib.ai.anthropic_client import AnthropicClient
+from config import settings
+from app.lib.supabase.client import get_supabase_client
 
 # ✅ Explicitly rename to avoid router alias conflicts
 commands_router = APIRouter(prefix="/commands", tags=["Commands"])

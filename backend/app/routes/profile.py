@@ -6,8 +6,8 @@ import secrets
 import string
 from datetime import datetime
 
-from backend.app.auth.jwt import get_current_user, TokenData
-from backend.app.lib.supabase.client import get_supabase_client
+from app.auth.jwt import get_current_user, TokenData
+from app.lib.supabase.client import get_supabase_client
 
 # Initialize router
 router = APIRouter(prefix="/profile", tags=["Profile"])

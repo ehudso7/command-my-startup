@@ -5,8 +5,8 @@ from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, Field
 from typing import Optional, Dict
-from backend.app.config import settings
-from backend.app.lib.supabase.client import get_supabase_client
+from config import settings
+from app.lib.supabase.client import get_supabase_client
 
 # Use 'auth/token' endpoint for token acquisition
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")

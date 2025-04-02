@@ -5,7 +5,7 @@ import logging
 import asyncio
 from redis.asyncio import Redis
 from typing import Optional
-from backend.app.config import settings
+from app.config import settings
 
 logger = logging.getLogger("rate_limiter")
 

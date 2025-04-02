@@ -5,10 +5,10 @@ from typing import Optional
 from datetime import datetime, timedelta
 import logging
 
-from backend.app.auth.jwt import create_access_token, create_refresh_token, get_current_user, TokenData
-from backend.app.config import settings
-from backend.app.lib.supabase.client import get_supabase_client
-from backend.app.models.user import UserCreate, UserResponse, UserLogin
+from app.auth.jwt import create_access_token, create_refresh_token, get_current_user, TokenData
+from app.config import settings
+from app.lib.supabase.client import get_supabase_client
+from app.models.user import UserCreate, UserResponse, UserLogin
 
 # Initialize router
 router = APIRouter(prefix="/auth", tags=["Authentication"])
