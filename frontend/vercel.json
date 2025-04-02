@@ -2,7 +2,7 @@
   "buildCommand": "./vercel-build.sh",
   "devCommand": "npm run dev",
   "framework": "nextjs",
-  "installCommand": "npm ci --omit=dev --no-fund --no-audit",
+  "installCommand": "npm install",
   "regions": ["iad1"],
   "env": {
     "NODE_ENV": "production",

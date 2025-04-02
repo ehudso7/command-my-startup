@@ -11,8 +11,8 @@ export NEXT_TELEMETRY_DISABLED=1
 export NEXT_SHARP_PATH="/tmp/node_modules/sharp"
 export NODE_OPTIONS="--max-old-space-size=3072"
 
-echo "📦 Installing core dependencies only..."
-npm ci --omit=dev --no-fund --no-audit
+echo "📦 Installing dependencies..."
+npm install
 
 echo "🔍 Ensuring critical packages are available..."
 npm install --no-save @tailwindcss/typography@0.5.10
