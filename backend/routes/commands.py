@@ -16,6 +16,7 @@ logger = logging.getLogger("commands")
 openai_client = OpenAIClient(settings.openai_api_key)
 anthropic_client = AnthropicClient(settings.anthropic_api_key)
 
+
 # Models
 class CommandInput(BaseModel):
     prompt: str
@@ -24,12 +25,14 @@ class CommandInput(BaseModel):
     temperature: Optional[float] = Field(0.7, ge=0, le=1)
     max_tokens: Optional[int] = Field(1024, gt=0, le=4096)
 
+
 class CommandResponse(BaseModel):
     id: str
     content: str
     model: str
     created_at: str
     tokens_used: Optional[int] = None
+
 
 class CommandHistory(BaseModel):
     id: str
@@ -38,10 +41,10 @@ class CommandHistory(BaseModel):
     created_at: str
     tokens_used: Optional[int] = None
 
+
 @commands_router.post("/execute", response_model=CommandResponse)
 async def execute_command(
-    command: CommandInput,
-    token_data: TokenData = Depends(get_current_user)
+    command: CommandInput, token_data: TokenData = Depends(get_current_user)
 ):
     user_id = token_data.sub
 
@@ -52,18 +55,18 @@ async def execute_command(
                 model=command.model,
                 temperature=command.temperature,
                 max_tokens=command.max_tokens,
-                system_prompt=command.system_prompt
+                system_prompt=command.system_prompt,
             )
         elif command.model.startswith("claude-"):
             response = await anthropic_client.generate(
                 prompt=command.prompt,
                 model=command.model,
-                max_tokens=command.max_tokens
+                max_tokens=command.max_tokens,
             )
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unsupported model: {command.model}"
+                detail=f"Unsupported model: {command.model}",
             )
 
         supabase = get_supabase_client()
@@ -72,7 +75,7 @@ async def execute_command(
             "prompt": command.prompt,
             "response": response["content"],
             "model": command.model,
-            "tokens_used": response.get("tokens_used")
+            "tokens_used": response.get("tokens_used"),
         }
 
         result = supabase.table("commands").insert(command_data).execute()
@@ -87,14 +90,15 @@ async def execute_command(
         logger.error(f"Command execution error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to execute command"
+            detail="Failed to execute command",
         )
+
 
 @commands_router.get("/", response_model=List[CommandHistory])
 async def get_command_history(
     token_data: TokenData = Depends(get_current_user),
     limit: int = Query(20, ge=1, le=100),
-    offset: int = Query(0, ge=0)
+    offset: int = Query(0, ge=0),
 ):
     user_id = token_data.sub
 
@@ -119,13 +123,13 @@ async def get_command_history(
         logger.error(f"Error fetching command history for user {user_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve command history"
+            detail="Failed to retrieve command history",
         )
+
 
 @commands_router.get("/{command_id}", response_model=CommandResponse)
 async def get_command_detail(
-    command_id: str,
-    token_data: TokenData = Depends(get_current_user)
+    command_id: str, token_data: TokenData = Depends(get_current_user)
 ):
     user_id = token_data.sub
 
@@ -142,8 +146,7 @@ async def get_command_detail(
 
         if not result.data:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Command not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Command not found"
             )
 
         return {
@@ -151,22 +154,24 @@ async def get_command_detail(
             "content": result.data["response"],
             "model": result.data["model"],
             "created_at": result.data["created_at"],
-            "tokens_used": result.data["tokens_used"]
+            "tokens_used": result.data["tokens_used"],
         }
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching command detail {command_id} for user {user_id}: {str(e)}")
+        logger.error(
+            f"Error fetching command detail {command_id} for user {user_id}: {str(e)}"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve command details"
+            detail="Failed to retrieve command details",
         )
+
 
 @commands_router.delete("/{command_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_command(
-    command_id: str,
-    token_data: TokenData = Depends(get_current_user)
+    command_id: str, token_data: TokenData = Depends(get_current_user)
 ):
     user_id = token_data.sub
 
@@ -183,8 +188,7 @@ async def delete_command(
 
         if not check_result.data:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Command not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Command not found"
             )
 
         result = (
@@ -201,13 +205,15 @@ async def delete_command(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting command {command_id} for user {user_id}: {str(e)}")
+        logger.error(
+            f"Error deleting command {command_id} for user {user_id}: {str(e)}"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete command"
+            detail="Failed to delete command",
         )
+
 
 @commands_router.get("/health")
 def health_check():
     return {"status": "healthy"}
-
