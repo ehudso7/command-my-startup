@@ -43,16 +43,18 @@ const nextConfig = {
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "pk_test_dummy_key_for_build_time_only",
   },
   
-  transpilePackages: [],
+  // Use either transpilePackages or serverExternalPackages but not both for the same packages
   output: 'standalone',
   
   // Specify server external packages for server components
-  serverExternalPackages: ['@supabase/ssr', '@supabase/supabase-js'],
+  serverExternalPackages: ['@supabase/ssr'],
   
-  // Other configuration options
+  // Experimental options with proper configuration
   experimental: {
-    optimizePackageImports: ['@supabase/supabase-js', 'react-dom'],
-    serverActions: true
+    optimizePackageImports: ['react-dom'],
+    serverActions: {
+      allowedOrigins: ['localhost:3000']
+    }
   },
 };
 
