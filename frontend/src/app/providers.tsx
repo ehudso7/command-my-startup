@@ -1,20 +1,11 @@
 "use client";
+import React from "react";
 
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ToastProvider } from "@/contexts/ToastContext";
-import { UploadProvider } from "@/contexts/UploadProvider";
-
-export function Providers({ children }: { children: React.ReactNode }) {
-  return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ToastProvider>
-          <UploadProvider>
-            {children}
-          </UploadProvider>
-        </ToastProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  );
+interface ProvidersProps {
+  children: React.ReactNode;
 }
+
+export function Providers({ children }: ProvidersProps) {
+  return <>{children}</>;
+}
+

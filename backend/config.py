@@ -106,3 +106,7 @@ def get_settings():
     settings = Settings()
     settings.log_config()
     return settings
+
+# ✅ This is the missing piece
+settings = get_settings()
+

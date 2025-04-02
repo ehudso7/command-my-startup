@@ -1,6 +1,4 @@
-/**
- * Backend API client for communicating with our backend service
- */
+/* global RequestInit */
 
 import { supabase } from "@/lib/supabase/client";
 

@@ -152,7 +152,7 @@ export function UploadProvider({ children }: { children: ReactNode }) {
             cacheControl: "3600",
             upsert: false,
             contentType: fileData.file.type,
-            // @ts-ignore - Supabase SDK type definition doesn't include onUploadProgress
+            // @ts-expect-error - Supabase SDK type definition doesn't include onUploadProgress
             onUploadProgress: (event: { loaded: number; total: number }) => {
               const progress = (event.loaded / event.total) * 100;
 

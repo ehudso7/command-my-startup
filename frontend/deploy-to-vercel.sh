@@ -1,50 +1,34 @@
 #!/bin/bash
-# Comprehensive script to fix and deploy to Vercel
+# Optimized script for reliable Vercel deployment
 
 echo "🚀 Starting Vercel deployment preparation..."
 
-# Clean the environment
+# Step 1: Clean the environment completely
 echo "🧹 Cleaning build environment..."
-rm -rf .next
-rm -rf node_modules/.cache
-rm -rf .vercel
+chmod +x ./clear-cache.sh
+./clear-cache.sh
 
-# Save original files
-echo "💾 Backing up original files..."
-cp src/app/layout.tsx src/app/layout.tsx.bak
-cp src/app/globals.css src/app/globals.css.bak
-cp next.config.js next.config.js.bak
+# Step 2: Install dependencies with clean installation
+echo "📦 Installing dependencies..."
+npm install
 
-# Replace with simplified versions
-echo "🔄 Replacing with simplified versions..."
-cp src/app/vercel-layout.tsx src/app/layout.tsx
-cp src/app/vercel-globals.css src/app/globals.css
-cp vercel-production.js next.config.js
+# Step 3: Apply route fixes
+echo "🔧 Applying route fixes..."
+chmod +x ./fix-routes.sh
+./fix-routes.sh
 
-# Create simplified vercel.json
-echo "📝 Creating simplified vercel.json..."
-cat > vercel.json << 'EOF'
-{
-  "framework": "nextjs",
-  "buildCommand": "npm install && npm run build",
-  "installCommand": "npm install",
-  "devCommand": "npm run dev",
-  "outputDirectory": ".next"
-}
-EOF
+# Step 4: Apply CSS fixes
+echo "🎨 Applying CSS fixes..."
+node ./fix-vercel-css.js
 
-# Install minimal dependencies
-echo "📦 Installing minimal dependencies..."
-npm install --no-save next@latest react@latest react-dom@latest @vercel/analytics
+# Step 5: Run the optimized build script locally to verify
+echo "🔨 Testing build locally..."
+chmod +x ./vercel-build.sh
+./vercel-build.sh
 
-# Deploy to Vercel
-echo "🚀 Deploying to Vercel..."
-vercel --prod
+# Step 6: Deploy to Vercel
+echo "🚀 Ready to deploy to Vercel!"
+echo "Run 'vercel --prod' to deploy to production"
+echo "Or push your changes to GitHub for automatic deployment"
 
-# Restore original files
-echo "🔄 Restoring original files..."
-mv src/app/layout.tsx.bak src/app/layout.tsx
-mv src/app/globals.css.bak src/app/globals.css
-mv next.config.js.bak next.config.js
-
-echo "✅ Deployment process completed!"
+echo "✅ Deployment preparation completed!"
