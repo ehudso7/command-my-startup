@@ -28,8 +28,8 @@ const nextConfig = {
   
   // Minimized experimental features 
   experimental: {
-    // Disabled features to save resources
-    optimizeCss: true,
+    // Disabled CSS optimization due to critters dependency issues
+    optimizeCss: false,
     optimizeServerReact: true,
     scrollRestoration: true,
   },

@@ -17,6 +17,7 @@ npm install
 echo "🔍 Ensuring critical packages are available..."
 npm install --no-save @tailwindcss/typography@0.5.10
 npm install --no-save @supabase/auth-helpers-nextjs@0.8.7
+npm install --no-save critters
 
 echo "🚀 Building with optimized settings..."
 NODE_OPTIONS="--max-old-space-size=3072" next build
