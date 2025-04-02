@@ -3,10 +3,9 @@ import json
 import logging
 import time
 from typing import Any, Callable, Dict
-
+import os
 from fastapi import Request, Response, status
 from fastapi.responses import JSONResponse
-
 from lib.supabase import get_supabase_client
 
 # Configure logging
@@ -191,30 +190,3 @@ class RequestValidationMiddleware:
             logger.error(f"Error validating API key: {str(e)}")
             return False, None, None
 
-
-class APIKeyUserDependency:
-    """Dependency for routes to get the user from an API key"""
-
-    async def __call__(self, request: Request) -> Dict[str, Any]:
-        if (
-            not hasattr(request.state, "user_id")
-            or request.state.auth_method != "api_key"
-        ):
-            return None
-
-        # Fetch the user data from database
-        try:
-            user_id = request.state.user_id
-            supabase = get_supabase_client()
-            response = (
-                supabase.table("users").select("*").eq("id", user_id).single().execute()
-            )
-
-            if not response.data:
-                return None
-
-            return response.data
-
-        except Exception as e:
-            logger.error(f"Error fetching API key user: {str(e)}")
-            return None

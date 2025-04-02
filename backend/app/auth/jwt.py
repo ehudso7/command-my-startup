@@ -1,14 +1,17 @@
 import uuid
 from datetime import datetime, timedelta
 from typing import Dict, Optional
-
+import os
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel, Field
-
 from app.lib.supabase.client import get_supabase_client
 from config import settings
+
+# Constants for token types
+ACCESS_TOKEN_TYPE = os.getenv("ACCESS_TOKEN_TYPE", "access")
+REFRESH_TOKEN_TYPE = os.getenv("REFRESH_TOKEN_TYPE", "refresh")
 
 # Use 'auth/token' endpoint for token acquisition
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
@@ -19,7 +22,7 @@ class TokenData(BaseModel):
     jti: str
     exp: datetime
     iat: datetime = Field(default_factory=datetime.utcnow)
-    type: str = "access"
+    type: str = ACCESS_TOKEN_TYPE
 
 
 def create_access_token(
@@ -41,7 +44,7 @@ def create_access_token(
             "exp": expire,
             "iat": datetime.utcnow(),
             "jti": str(uuid.uuid4()),  # Add unique token ID
-            "type": "access",
+            "type": ACCESS_TOKEN_TYPE,  # Use the constant here
             "aud": settings.jwt_audience,  # Add audience claim
         }
     )
@@ -61,7 +64,7 @@ def create_refresh_token(data: Dict[str, str]) -> str:
             "exp": expire,
             "iat": datetime.utcnow(),
             "jti": str(uuid.uuid4()),  # Add unique token ID
-            "type": "refresh",
+            "type": REFRESH_TOKEN_TYPE,  # Use the constant here
             "aud": settings.jwt_audience,  # Add audience claim
         }
     )
@@ -99,16 +102,11 @@ async def get_current_user(
         if not all([user_id, token_type, jti]):
             raise credentials_exception
 
-        if token_type != "access":
+        if token_type != ACCESS_TOKEN_TYPE:  # Use the constant here
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token type",
             )
-
-        # Check if token is blacklisted (implement token blacklist if needed)
-        # is_blacklisted = await check_token_blacklist(jti)
-        # if is_blacklisted:
-        #     raise credentials_exception
 
         # Create token data
         token_data = TokenData(
@@ -123,3 +121,4 @@ async def get_current_user(
 
     except JWTError:
         raise credentials_exception
+

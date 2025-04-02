@@ -10,9 +10,7 @@ from config import get_settings
 from lib.supabase import get_supabase_client
 
 settings = get_settings()
-security = HTTPBearer(
-    auto_error=False
-)  # Don't auto-error so we can check for cookie as fallback
+security = HTTPBearer(auto_error=False)  # Don't auto-error so we can check for cookie as fallback
 logger = logging.getLogger(__name__)
 
 
@@ -149,3 +147,4 @@ async def get_optional_user(
         return await get_current_user(request, credentials, session_token)
     except HTTPException:
         return None
+

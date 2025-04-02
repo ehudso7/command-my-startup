@@ -6,6 +6,7 @@ from typing import Optional
 
 from fastapi import HTTPException, Request
 from redis.asyncio import Redis
+import os
 
 from app.config import settings
 
@@ -94,76 +95,3 @@ class RateLimiter:
 
         return False, len(requests), int(current + window)
 
-
-class RateLimiterMiddleware:
-    def __init__(
-        self,
-        rate_limiter: RateLimiter,
-        auth_routes_rpm: int = 20,
-        command_routes_rpm: int = 30,
-        general_routes_rpm: int = 60,
-    ):
-        self.rate_limiter = rate_limiter
-        self.auth_routes_rpm = auth_routes_rpm
-        self.command_routes_rpm = command_routes_rpm
-        self.general_routes_rpm = general_routes_rpm
-
-    async def __call__(self, request: Request, call_next):
-        # Get client identifier (IP + user agent hash or user ID if authenticated)
-        client_ip = request.client.host
-        user_agent = request.headers.get("user-agent", "")
-        identifier = f"{client_ip}:{hashlib.md5(user_agent.encode()).hexdigest()}"
-
-        # Try to get authenticated user ID
-        user_id = None
-        try:
-            user_id = request.state.user.id if hasattr(request.state, "user") else None
-        except:
-            pass
-
-        # Use user_id as identifier if available
-        if user_id:
-            identifier = f"user:{user_id}"
-
-        # Determine rate limit based on path
-        path = request.url.path
-        if path.startswith("/auth"):
-            limit = self.auth_routes_rpm
-            key = f"ratelimit:auth:{identifier}"
-        elif path.startswith("/commands"):
-            limit = self.command_routes_rpm
-            key = f"ratelimit:commands:{identifier}"
-        else:
-            limit = self.general_routes_rpm
-            key = f"ratelimit:general:{identifier}"
-
-        # Check rate limit
-        is_limited, current, reset = await self.rate_limiter.is_rate_limited(
-            key, limit, 60
-        )
-
-        if is_limited:
-            # Make retry-after value safe
-            retry_after = max(1, min(3600, reset - int(time.time())))
-
-            logger.warning(f"Rate limit exceeded for {identifier} on {path}")
-            raise HTTPException(
-                status_code=429,
-                detail="Too many requests",
-                headers={
-                    "Retry-After": str(retry_after),
-                    "X-RateLimit-Limit": str(limit),
-                    "X-RateLimit-Remaining": "0",
-                    "X-RateLimit-Reset": str(reset),
-                },
-            )
-
-        # Process the request
-        response = await call_next(request)
-
-        # Add rate limit headers to response
-        response.headers["X-RateLimit-Limit"] = str(limit)
-        response.headers["X-RateLimit-Remaining"] = str(max(0, limit - current))
-        response.headers["X-RateLimit-Reset"] = str(reset)
-
-        return response

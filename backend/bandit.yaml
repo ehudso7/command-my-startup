@@ -1,4 +1,3 @@
----
 # Bandit configuration file
 
 # Exclude certain paths from scanning
@@ -46,3 +45,4 @@ profiles:
       - B702  # use_of_mako_templates
     exclude:
       - B101  # assert_used
+
