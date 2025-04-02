@@ -1,3 +1,5 @@
+import type { Stripe } from '@stripe/stripe-js';
+
 // Global type declarations
 
 // For Speech Recognition API

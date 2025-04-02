@@ -1,103 +1,212 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from typing import Dict, Any, Optional, Union
-import uuid
-from datetime import datetime
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from pydantic import BaseModel, Field
+from typing import List, Optional
 import logging
+from datetime import datetime
 
-from models.command import CommandRequest, CommandResponse
-from lib.ai_client import generate_response
-from auth.utils import get_current_user
-from middleware import APIKeyUserDependency
-from lib.supabase import get_supabase_client
+from backend.app.auth.jwt import get_current_user, TokenData
+from backend.app.lib.ai.openai_client import OpenAIClient
+from backend.app.lib.ai.anthropic_client import AnthropicClient
+from backend.app.config import settings
+from backend.app.lib.supabase.client import get_supabase_client
 
-router = APIRouter()
-logger = logging.getLogger(__name__)
+# ✅ Explicitly rename to avoid router alias conflicts
+commands_router = APIRouter(prefix="/commands", tags=["Commands"])
+logger = logging.getLogger("commands")
 
-# Create dependency for authentication via JWT token or API key
-api_key_user = APIKeyUserDependency()
+# AI clients
+openai_client = OpenAIClient(settings.openai_api_key)
+anthropic_client = AnthropicClient(settings.anthropic_api_key)
 
-async def get_user_from_auth_or_api_key(
-    request: Request,
-    token_user: Dict[str, Any] = Depends(get_current_user, use_cache=False),
-    apikey_user: Dict[str, Any] = Depends(api_key_user, use_cache=False)
-) -> Dict[str, Any]:
-    """Get user from either JWT token or API key"""
-    # Token auth takes precedence
-    if token_user:
-        request.state.auth_method = "token"
-        return token_user
-        
-    # Fall back to API key auth
-    if apikey_user:
-        # Already set in middleware
-        return apikey_user
-        
-    # No authentication found
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Not authenticated"
-    )
+# Models
+class CommandInput(BaseModel):
+    prompt: str
+    model: str
+    system_prompt: Optional[str] = None
+    temperature: Optional[float] = Field(0.7, ge=0, le=1)
+    max_tokens: Optional[int] = Field(1024, gt=0, le=4096)
 
+class CommandResponse(BaseModel):
+    id: str
+    content: str
+    model: str
+    created_at: str
+    tokens_used: Optional[int] = None
 
-@router.post("", response_model=CommandResponse)
+class CommandHistory(BaseModel):
+    id: str
+    prompt: str
+    model: str
+    created_at: str
+    tokens_used: Optional[int] = None
+
+@commands_router.post("/execute", response_model=CommandResponse)
 async def execute_command(
-    request: Request,
-    command_data: CommandRequest,
-    current_user: Dict[str, Any] = Depends(get_user_from_auth_or_api_key)
+    command: CommandInput,
+    token_data: TokenData = Depends(get_current_user)
 ):
-    """Execute an AI command and return the response"""
+    user_id = token_data.sub
+
     try:
-        # Log authentication method used
-        auth_method = getattr(request.state, "auth_method", "token")
-        logger.info(f"Command executed by user {current_user['id']} using {auth_method} authentication")
-        
-        # Generate response from AI
-        ai_response = await generate_response(
-            prompt=command_data.prompt,
-            model=command_data.model,
-            system_prompt=command_data.system_prompt,
-            temperature=command_data.temperature,
-            max_tokens=command_data.max_tokens
-        )
-        
-        # Create unique identifier for this command execution
-        command_id = str(uuid.uuid4())
-        
-        # Store command execution in Supabase (optional, for history)
-        try:
-            supabase = get_supabase_client()
-            history_entry = {
-                "id": command_id,
-                "user_id": current_user["id"],
-                "prompt": command_data.prompt,
-                "model": command_data.model,
-                "content": ai_response["content"],
-                "tokens_used": ai_response.get("tokens_used"),
-                "created_at": datetime.utcnow().isoformat()
-            }
-            
-            # If using API key, store which key was used
-            if auth_method == "api_key" and hasattr(request.state, "api_key_id"):
-                history_entry["api_key_id"] = request.state.api_key_id
-            
-            # Store in database
-            supabase.table("command_history").insert(history_entry).execute()
-        except Exception as e:
-            # Log the error but don't fail the request if storage fails
-            logger.error(f"Error storing command history: {str(e)}")
-        
-        # Format and return response
-        return CommandResponse(
-            id=command_id,
-            content=ai_response["content"],
-            model=command_data.model,
-            created_at=datetime.utcnow().isoformat(),
-            tokens_used=ai_response.get("tokens_used")
-        )
-        
+        if command.model.startswith(("gpt-", "text-davinci")):
+            response = await openai_client.generate(
+                prompt=command.prompt,
+                model=command.model,
+                temperature=command.temperature,
+                max_tokens=command.max_tokens,
+                system_prompt=command.system_prompt
+            )
+        elif command.model.startswith("claude-"):
+            response = await anthropic_client.generate(
+                prompt=command.prompt,
+                model=command.model,
+                max_tokens=command.max_tokens
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported model: {command.model}"
+            )
+
+        supabase = get_supabase_client()
+        command_data = {
+            "user_id": user_id,
+            "prompt": command.prompt,
+            "response": response["content"],
+            "model": command.model,
+            "tokens_used": response.get("tokens_used")
+        }
+
+        result = supabase.table("commands").insert(command_data).execute()
+
+        if result.data:
+            response["id"] = result.data[0]["id"]
+        else:
+            logger.error(f"Failed to store command for user {user_id}")
+
+        return response
+
     except Exception as e:
-        logger.error(f"Error executing command: {str(e)}")
+        logger.error(f"Command execution error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error executing command: {str(e)}"
+            detail="Failed to execute command"
         )
+
+@commands_router.get("", response_model=List[CommandHistory])
+async def get_command_history(
+    token_data: TokenData = Depends(get_current_user),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0)
+):
+    user_id = token_data.sub
+
+    try:
+        supabase = get_supabase_client()
+        result = (
+            supabase.table("commands")
+            .select("id, prompt, model, created_at, tokens_used")
+            .eq("user_id", user_id)
+            .order("created_at", desc=True)
+            .limit(limit)
+            .offset(offset)
+            .execute()
+        )
+
+        if result.error:
+            raise Exception(result.error.message)
+
+        return result.data
+
+    except Exception as e:
+        logger.error(f"Error fetching command history for user {user_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve command history"
+        )
+
+@commands_router.get("/{command_id}", response_model=CommandResponse)
+async def get_command_detail(
+    command_id: str,
+    token_data: TokenData = Depends(get_current_user)
+):
+    user_id = token_data.sub
+
+    try:
+        supabase = get_supabase_client()
+        result = (
+            supabase.table("commands")
+            .select("id, response, model, created_at, tokens_used")
+            .eq("id", command_id)
+            .eq("user_id", user_id)
+            .single()
+            .execute()
+        )
+
+        if not result.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Command not found"
+            )
+
+        return {
+            "id": result.data["id"],
+            "content": result.data["response"],
+            "model": result.data["model"],
+            "created_at": result.data["created_at"],
+            "tokens_used": result.data["tokens_used"]
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching command detail {command_id} for user {user_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve command details"
+        )
+
+@commands_router.delete("/{command_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_command(
+    command_id: str,
+    token_data: TokenData = Depends(get_current_user)
+):
+    user_id = token_data.sub
+
+    try:
+        supabase = get_supabase_client()
+
+        check_result = (
+            supabase.table("commands")
+            .select("id")
+            .eq("id", command_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if not check_result.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Command not found"
+            )
+
+        result = (
+            supabase.table("commands")
+            .delete()
+            .eq("id", command_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if result.error:
+            raise Exception(result.error.message)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting command {command_id} for user {user_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete command"
+        )
+

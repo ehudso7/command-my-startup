@@ -1,3 +1,4 @@
+/* global jest, URLSearchParams */
 // Mock for next/navigation
 export function useRouter() {
   return {

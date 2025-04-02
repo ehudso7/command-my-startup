@@ -1,44 +1,20 @@
 services:
   - type: web
-    name: command-my-startup-api
-    runtime: python
-    buildCommand: cd backend && pip install -r requirements.txt
-    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    name: command-my-startup-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 4
     envVars:
-      - key: ENVIRONMENT
-        value: production
-      - key: PYTHONPATH
-        value: .
+      - key: JWT_SECRET_KEY
+        sync: false
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_KEY
         sync: false
-      - key: JWT_SECRET_KEY
-        generateValue: true
-        length: 32
-      - key: JWT_TOKEN_EXPIRE_MINUTES
-        value: "60"
       - key: OPENAI_API_KEY
         sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
-      - key: STRIPE_API_KEY
-        sync: false
-      - key: STRIPE_WEBHOOK_SECRET
-        sync: false
       - key: CORS_ORIGINS
-        value: "https://command-my-startup.vercel.app,https://www.commandmystartup.com,https://commandmystartup.com"
-      - key: RATE_LIMIT_AUTH
-        value: "10"
-      - key: RATE_LIMIT_COMMAND
-        value: "20"
-      - key: RATE_LIMIT_GENERAL
-        value: "30"
-    healthCheckPath: /health
-    autoDeploy: false
-    plan: standard
-    scaling:
-      minInstances: 1
-      maxInstances: 3
-      targetMemoryPercent: 80
-      targetCPUPercent: 70
+        value: https://your-frontend-domain.com
+    autoDeploy: true

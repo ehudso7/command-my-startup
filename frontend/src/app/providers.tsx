@@ -1,19 +1,11 @@
-
 "use client";
+import React from "react";
 
-// Simplified providers wrapper for production build
-import { Analytics } from "@vercel/analytics/react";
-import { ReactNode } from "react";
-
-type ProvidersProps = {
-  children: ReactNode;
-};
+interface ProvidersProps {
+  children: React.ReactNode;
+}
 
 export function Providers({ children }: ProvidersProps) {
-  return (
-    <>
-      {children}
-      <Analytics />
-    </>
-  );
+  return <>{children}</>;
 }
+

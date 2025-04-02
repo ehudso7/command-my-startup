@@ -7,14 +7,14 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  
+
   // Performance settings
   reactStrictMode: false,
   poweredByHeader: false,
-  
+
   // Static optimization - increase cache effectiveness
   staticPageGenerationTimeout: 120,
-  
+
   // Environment variables
   env: {
     VERCEL: process.env.VERCEL || '1',
@@ -22,18 +22,13 @@ const nextConfig = {
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || "whsec_dummy_key_for_build_time_only",
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "pk_test_dummy_key_for_build_time_only",
   },
-  
+
   // Production output
   output: 'standalone',
-  
-  // External packages for server components
-  serverExternalPackages: ['@supabase/ssr', '@supabase/supabase-js'],
-  
+
   // Optimized experimental features
   experimental: {
-    // Disabled CSS optimization to avoid critters dependency issues
     optimizeCss: false,
-    // Performance optimizations
     scrollRestoration: true,
   },
 
@@ -45,3 +40,4 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+
