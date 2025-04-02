@@ -5,7 +5,7 @@ pydantic==2.6.3
 python-multipart==0.0.9
 python-jose==3.3.0
 passlib==1.7.4
-bcrypt==4.1.2
+bcrypt==4.3.0
 httpx==0.24.1
 stripe==5.4.0
 supabase==2.3.1
