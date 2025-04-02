@@ -10,7 +10,7 @@ chmod +x ./clear-cache.sh
 
 # Step 2: Install dependencies with clean installation
 echo "📦 Installing dependencies..."
-npm clean-install
+npm install
 
 # Step 3: Apply route fixes
 echo "🔧 Applying route fixes..."

@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
   "buildCommand": "chmod +x ./vercel-build.sh && ./vercel-build.sh",
-  "installCommand": "npm clean-install",
+  "installCommand": "npm install",
   "devCommand": "npm run dev",
   "outputDirectory": ".next",
   "regions": ["iad1"],
