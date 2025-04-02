@@ -3,17 +3,13 @@
   "devCommand": "npm run dev",
   "framework": "nextjs",
   "outputDirectory": ".next",
-  "installCommand": "npm clean-install",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next",
-      "config": {
-        "skipTypecheck": true,
-        "skipLint": true
-      }
-    }
-  ],
+  "installCommand": "npm install",
+  "regions": ["iad1"],
+  "env": {
+    "NODE_ENV": "production",
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "NEXT_SHARP_PATH": "/tmp/node_modules/sharp"
+  },
   "build": {
     "env": {
       "NODE_VERSION": "20.x"
@@ -23,18 +19,9 @@
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" }
       ]
     }
   ]
