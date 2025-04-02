@@ -14,7 +14,7 @@ api_router = APIRouter()
 api_router.include_router(auth_router, prefix="/api/auth", tags=["Authentication API"])
 
 # /commands/... (prefix already defined in commands.py)
-api_router.include_router(commands_router)
+api_router.include_router(commands_router, prefix="/api/commands", tags=["Commands API"])
 
 # /api/profile/...
 api_router.include_router(profile_router, prefix="/api/profile", tags=["User Profile API"])
