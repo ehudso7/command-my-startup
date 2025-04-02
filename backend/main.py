@@ -6,13 +6,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import Counter, Histogram, make_asgi_app
 
 from config import get_settings
-from middleware import (
-    RateLimiterMiddleware,
-    RequestValidationMiddleware,
-    http_exception_handler,
-    internal_exception_handler,
-    validation_exception_handler,
-)
+from middleware import (RateLimiterMiddleware, RequestValidationMiddleware,
+                        http_exception_handler, internal_exception_handler,
+                        validation_exception_handler)
 from routes import api_router
 
 # Configure logging

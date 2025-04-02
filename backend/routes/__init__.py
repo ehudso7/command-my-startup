@@ -33,4 +33,3 @@ api_router.include_router(
 api_router.include_router(debug_router, prefix="/api/debug", tags=["Debug API"])
 
 # (Optional) Direct-access legacy route (only if needed elsewhere)
-# api_router.include_router(auth_router, prefix="/auth", tags=["Authentication"])

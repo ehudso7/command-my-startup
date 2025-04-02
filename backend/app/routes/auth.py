@@ -2,16 +2,13 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
+from fastapi import (APIRouter, Cookie, Depends, HTTPException, Request,
+                     Response, status)
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, Field
 
-from app.auth.jwt import (
-    TokenData,
-    create_access_token,
-    create_refresh_token,
-    get_current_user,
-)
+from app.auth.jwt import (TokenData, create_access_token, create_refresh_token,
+                          get_current_user)
 from app.config import settings
 from app.lib.supabase.client import get_supabase_client
 from app.models.user import UserCreate, UserLogin, UserResponse
@@ -58,7 +55,7 @@ async def register(user_data: UserCreate, request: Request):
                 "email": user_data.email,
                 "password": user_data.password,
                 "user_metadata": {"full_name": user_data.full_name},
-                "email_confirm": True,  # Skip email verification for now
+                "email_confirm": True,
             }
         )
 
@@ -69,7 +66,6 @@ async def register(user_data: UserCreate, request: Request):
 
         user_id = auth_user.user.id
 
-        # Create user profile in database
         profile = {
             "id": user_id,
             "email": user_data.email,
@@ -77,9 +73,7 @@ async def register(user_data: UserCreate, request: Request):
             "referral_code": f"REF{user_id[:8].upper()}",
         }
 
-        # Add referral data if provided
         if user_data.referred_by:
-            # Verify referral code
             referrer = (
                 supabase.table("users")
                 .select("id")
@@ -89,7 +83,6 @@ async def register(user_data: UserCreate, request: Request):
             if referrer.data:
                 profile["referred_by"] = referrer.data[0]["id"]
 
-                # Create referral record
                 supabase.table("referrals").insert(
                     {
                         "referrer_id": referrer.data[0]["id"],
@@ -99,18 +92,15 @@ async def register(user_data: UserCreate, request: Request):
                     }
                 ).execute()
 
-        # Create user profile
         user_result = supabase.table("users").insert(profile).execute()
 
         if not user_result.data:
-            # Rollback auth user if profile creation fails
             supabase.auth.admin.delete_user(user_id)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create user profile",
             )
 
-        # Return created user
         return UserResponse(
             id=user_id,
             email=user_data.email,
@@ -132,10 +122,9 @@ async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depen
     supabase = get_supabase_client()
 
     try:
-        # Authenticate with Supabase
         auth_result = supabase.auth.sign_in_with_password(
             {
-                "email": form_data.username,  # OAuth2 form uses username field
+                "email": form_data.username,
                 "password": form_data.password,
             }
         )
@@ -148,15 +137,12 @@ async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depen
         user = auth_result.user
         session = auth_result.session
 
-        # Create our own tokens
         access_token = create_access_token(
             data={"sub": user.id},
             expires_delta=timedelta(minutes=settings.jwt_access_token_expire_minutes),
         )
-
         refresh_token = create_refresh_token(data={"sub": user.id})
 
-        # Get user profile
         profile = supabase.table("users").select("*").eq("id", user.id).execute()
 
         if not profile.data:
@@ -164,7 +150,6 @@ async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depen
                 status_code=status.HTTP_404_NOT_FOUND, detail="User profile not found"
             )
 
-        # Set cookies
         response.set_cookie(
             key="access_token",
             value=access_token,
@@ -173,7 +158,6 @@ async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depen
             samesite="lax",
             max_age=settings.jwt_access_token_expire_minutes * 60,
         )
-
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
@@ -183,7 +167,6 @@ async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depen
             max_age=settings.jwt_refresh_token_expire_days * 24 * 60 * 60,
         )
 
-        # Return tokens and user info
         return TokenResponse(
             access_token=access_token,
             token_type="bearer",
@@ -213,8 +196,6 @@ async def refresh_token(
     request: RefreshRequest = None,
     refresh_token: str = Cookie(None),
 ):
-    """Refresh access token"""
-    # Get refresh token from request body or cookie
     token = (
         request.refresh_token if request and request.refresh_token else refresh_token
     )
@@ -227,7 +208,6 @@ async def refresh_token(
     supabase = get_supabase_client()
 
     try:
-        # First try to refresh with Supabase
         auth_result = supabase.auth.refresh_session({"refresh_token": token})
 
         if auth_result.error:
@@ -238,15 +218,12 @@ async def refresh_token(
         user = auth_result.user
         session = auth_result.session
 
-        # Create our own tokens
         access_token = create_access_token(
             data={"sub": user.id},
             expires_delta=timedelta(minutes=settings.jwt_access_token_expire_minutes),
         )
-
         refresh_token = create_refresh_token(data={"sub": user.id})
 
-        # Get user profile
         profile = supabase.table("users").select("*").eq("id", user.id).execute()
 
         if not profile.data:
@@ -254,7 +231,6 @@ async def refresh_token(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User profile not found"
             )
 
-        # Set cookies
         response.set_cookie(
             key="access_token",
             value=access_token,
@@ -263,7 +239,6 @@ async def refresh_token(
             samesite="lax",
             max_age=settings.jwt_access_token_expire_minutes * 60,
         )
-
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
@@ -273,7 +248,6 @@ async def refresh_token(
             max_age=settings.jwt_refresh_token_expire_days * 24 * 60 * 60,
         )
 
-        # Return tokens and user info
         return TokenResponse(
             access_token=access_token,
             token_type="bearer",
@@ -301,17 +275,14 @@ async def refresh_token(
 async def logout(response: Response, token_data: TokenData = Depends(get_current_user)):
     """Logout user and invalidate tokens"""
     try:
-        # Clear cookies
         response.delete_cookie("access_token")
         response.delete_cookie("refresh_token")
 
-        # Invalidate session in Supabase if needed
         supabase = get_supabase_client()
         try:
             supabase.auth.admin.sign_out(token_data.sub)
-        except:
-            # Don't fail if Supabase session is already invalid
-            pass
+        except Exception as e:
+            logger.warning(f"Supabase sign out failed for user {token_data.sub}: {e}")
 
         return {"message": "Logged out successfully"}
     except Exception as e:
@@ -330,12 +301,9 @@ async def request_password_reset(email: EmailStr):
         result = supabase.auth.reset_password_email(email)
 
         if result.error:
-            # Don't expose whether the email exists
             logger.warning(f"Password reset error for {email}: {result.error.message}")
 
-        # Always return success to prevent email enumeration
         return {"message": "Password reset instructions sent if email exists"}
     except Exception as e:
         logger.error(f"Password reset error: {str(e)}")
-        # Always return success to prevent email enumeration
         return {"message": "Password reset instructions sent if email exists"}

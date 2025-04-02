@@ -4,11 +4,8 @@ import anthropic
 import openai
 import pytest
 
-from lib.ai_client import (
-    generate_response,
-    generate_with_anthropic,
-    generate_with_openai,
-)
+from lib.ai_client import (generate_response, generate_with_anthropic,
+                           generate_with_openai)
 
 
 @pytest.mark.asyncio

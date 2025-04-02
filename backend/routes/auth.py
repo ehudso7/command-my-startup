@@ -2,7 +2,8 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
+from fastapi import (APIRouter, Cookie, Depends, HTTPException, Request,
+                     Response, status)
 
 from auth.utils import create_access_token, decode_token
 from config import get_settings
