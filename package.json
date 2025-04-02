@@ -1,7 +1,43 @@
 {
-  "name": "command-my-startup",
+  "name": "command-my-startup-root",
+  "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "frontend"
-  ]
+  "description": "Monorepo root for Command My Startup - AI-driven startup builder",
+  "author": "Everton Hudson",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "dev:frontend": "cd frontend && npm run dev",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx --ignore-path .gitignore",
+    "format": "prettier --write .",
+    "typecheck": "cd frontend && tsc --noEmit",
+    "build:frontend": "cd frontend && npm run build",
+    "deploy:vercel": "bash frontend/deploy-to-vercel.sh",
+    "deploy:render": "bash backend/deploy-render.sh || echo 'Implement this if needed'",
+    "fix:eslint": "bash frontend/fix-eslint.sh",
+    "clean": "rm -rf node_modules frontend/node_modules backend/__pycache__ .turbo .next dist",
+    "install:all": "npm install && cd frontend && npm install",
+    "test": "echo 'No global tests yet. Run frontend or backend tests separately.'"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.29.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.57.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.2.5"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,jsx,json,css,md}": "prettier --write"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  }
 }

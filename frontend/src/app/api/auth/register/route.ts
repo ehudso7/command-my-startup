@@ -5,6 +5,9 @@ import { cookies } from "next/headers";
 // Backend API URL
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+// Mark this route as dynamic to handle cookies/auth
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const { email, password, fullName } = await request.json();

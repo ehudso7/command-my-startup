@@ -1,28 +1,35 @@
 services:
   - type: web
-    name: command-my-startup-api
-    runtime: python
-    buildCommand: cd backend && pip install -r requirements.txt
-    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    name: command-my-startup-backend
+    env: python
+    pythonVersion: 3.11.8
+    plan: standard  # Consider 'starter' for dev, 'standard' for prod scalability
+    buildCommand: |
+      python -m venv venv
+      source venv/bin/activate
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: |
+      source venv/bin/activate
+      uvicorn main:app --host 0.0.0.0 --port $PORT --workers 4
     envVars:
       - key: ENVIRONMENT
         value: production
-      - key: PYTHONPATH
-        value: .
+      - key: JWT_SECRET_KEY
+        sync: false
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_KEY
         sync: false
-      - key: JWT_SECRET_KEY
-        generateValue: true
       - key: OPENAI_API_KEY
         sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: STRIPE_API_KEY
         sync: false
-      - key: STRIPE_WEBHOOK_SECRET
+      - key: REDIS_URL
         sync: false
-    healthCheckPath: /health
+      - key: CORS_ORIGINS
+        value: https://command-my-startup-frontend-ag97vps7n-everton-hudsons-projects.vercel.app
     autoDeploy: true
-    plan: starter
+

@@ -4,6 +4,9 @@ import Stripe from "stripe";
 
 // This is a special endpoint that doesn't check for user authentication
 // because it's called by Stripe, not by the user
+// Mark this route as dynamic to handle cookies/auth
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {

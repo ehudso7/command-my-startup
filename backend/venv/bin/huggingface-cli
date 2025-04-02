@@ -1,4 +1,4 @@
-#!/Users/evertonhudson/Projects/command-my-startup/backend/venv/bin/python3.13
+#!/Users/evertonhudson/Projects/command-my-startup/backend/venv/bin/python3.11
 # -*- coding: utf-8 -*-
 import re
 import sys

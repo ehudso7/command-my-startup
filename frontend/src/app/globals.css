@@ -1,19 +1,11 @@
+
+/* Minimal globals.css for emergency build */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 9%;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-  }
-}
-
 body {
-  @apply bg-background text-foreground;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
 }

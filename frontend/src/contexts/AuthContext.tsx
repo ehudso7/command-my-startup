@@ -1,13 +1,8 @@
 "use client";
 
-import {
-  createContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
+import { createContext, useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Session, User } from "@supabase/supabase-js";
+import { Session, User, Provider } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 import {
   registerUser,
@@ -16,17 +11,19 @@ import {
   refreshAuthToken,
   getUserProfile,
 } from "@/lib/api";
-import { AuthContextType } from "@/lib/auth/types";
+import { AuthContextType, UserProfile } from "@/lib/auth/types";
 
-// Create context with default values
+// Auth refresh interval in milliseconds (10 minutes)
+const TOKEN_REFRESH_INTERVAL = 10 * 60 * 1000;
+
 const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   profile: null,
   isLoading: true,
-  signUp: async () => {},
-  signIn: async () => {},
-  signInWithProvider: async () => {},
+  signUp: async () => ({ data: null, error: null }),
+  signIn: async () => ({ data: null, error: null }),
+  signInWithProvider: async () => ({ data: null, error: null }),
   signOut: async () => {},
   resetPassword: async () => {},
   updateProfile: async () => {},
@@ -36,21 +33,35 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<any | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Initialize auth state
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data: profileData, error: profileError } = await getUserProfile();
+      if (profileData) {
+        setProfile(profileData);
+        return;
+      }
+
+      const { data: supabaseProfile } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      setProfile(supabaseProfile);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
+
   useEffect(() => {
     async function getInitialSession() {
       try {
         setIsLoading(true);
-
-        // Get the current session
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
           console.error("Error getting session:", error);
@@ -60,38 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session) {
           setSession(session);
           setUser(session.user);
-
-          // Try to refresh the token to ensure it's still valid
-          const refreshed = await refreshAuthToken();
-          
-          if (!refreshed) {
-            // If refresh fails, try again with Supabase
-            try {
-              const { data: refreshData } = await supabase.auth.refreshSession();
-              if (refreshData.session) {
-                setSession(refreshData.session);
-                setUser(refreshData.session.user);
-              }
-            } catch (refreshError) {
-              console.error("Error refreshing with Supabase:", refreshError);
-            }
-          }
-
-          // Fetch user profile from backend
-          const { data: profileData, error: profileError } = await getUserProfile();
-          
-          if (profileData) {
-            setProfile(profileData);
-          } else {
-            // Fallback to Supabase
-            const { data: supabaseProfile } = await supabase
-              .from("users")
-              .select("*")
-              .eq("id", session.user.id)
-              .single();
-
-            setProfile(supabaseProfile);
-          }
+          await refreshSession();
+          await fetchUserProfile(session.user.id);
         }
       } catch (error) {
         console.error("Error in getInitialSession:", error);
@@ -102,286 +83,138 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     getInitialSession();
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
 
-      if (session?.user) {
-        // Fetch updated profile from backend
-        const { data: profileData } = await getUserProfile();
-        
-        if (profileData) {
-          setProfile(profileData);
+        if (session?.user) {
+          await fetchUserProfile(session.user.id);
         } else {
-          // Fallback to Supabase
-          const { data: supabaseProfile } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
-
-          setProfile(supabaseProfile);
+          setProfile(null);
         }
-      } else {
-        setProfile(null);
+
+        setIsLoading(false);
       }
+    );
 
-      setIsLoading(false);
-    });
-
-    // Set up a timer to refresh the token periodically
     const refreshInterval = setInterval(() => {
-      if (session) {
-        refreshAuthToken().catch(error => {
-          console.error("Auto refresh token error:", error);
-        });
-      }
-    }, 10 * 60 * 1000); // Refresh every 10 minutes
+      if (session) refreshSession();
+    }, TOKEN_REFRESH_INTERVAL);
 
-    // Cleanup subscription and interval on unmount
     return () => {
       subscription.unsubscribe();
       clearInterval(refreshInterval);
     };
   }, []);
 
-  // Sign up with email and password
   async function signUp(email: string, password: string, fullName: string) {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-
-      // Register with our backend
       const { data, error } = await registerUser(email, password, fullName);
+      if (error) throw error;
 
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      console.log("Registration successful:", data);
-
-      // Supabase auth is handled inside registerUser function now
-      // It will be done as a fallback if backend registration fails
-
-      // Check if we need to update the session after registration
       if (data?.session) {
-        // Set session in Supabase if not already set
         await supabase.auth.setSession({
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token,
         });
-      } else if (data?.user) {
-        // If we got a user but no session, make sure the user is aware they need to verify
-        console.log("User registered but needs verification:", data.user);
       }
 
-      // Navigate to verification page
       router.push("/auth/verify");
+      return { data, error: null };
     } catch (error: any) {
-      console.error("Error signing up:", error);
-      throw new Error(error.message || "An error occurred during sign up");
+      console.error("Registration error:", error);
+      return { data: null, error };
     } finally {
       setIsLoading(false);
     }
   }
 
-  // Sign in with email and password
   async function signIn(email: string, password: string) {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-
-      // Login with our backend
       const { data, error } = await loginUser(email, password);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      // Update state with the new session
-      if (data.session) {
-        // Session is already set in Supabase by loginUser function
-        
-        // Get the user info
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (session) {
-          setSession(session);
-          setUser(session.user);
-        }
-
-        // Fetch user profile
-        const { data: profileData } = await getUserProfile();
-        if (profileData) {
-          setProfile(profileData);
-        }
-      }
-
-      // Navigate to dashboard
-      router.push("/dashboard");
-    } catch (error: any) {
-      console.error("Error signing in:", error);
-      throw new Error(error.message || "An error occurred during sign in");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  // Sign in with third-party provider
-  async function signInWithProvider(
-    // Use type assertion to make TypeScript happy
-    provider: "google" | "github" | "microsoft", 
-  ) {
-    // Cast the provider to Supabase's Provider type
-    const supabaseProvider = provider as any; // This is a workaround for type compatibility
-    try {
-      setIsLoading(true);
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: supabaseProvider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
       if (error) throw error;
+
+      if (data?.session) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+      }
+
+      router.push("/");
+      return { data, error: null };
     } catch (error: any) {
-      console.error("Error signing in with provider:", error);
-      throw new Error(error.message || "An error occurred during sign in");
+      console.error("Login error:", error);
+      return { data: null, error };
     } finally {
       setIsLoading(false);
     }
   }
 
-  // Sign out
+  async function signInWithProvider(provider: Provider) {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({ provider });
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error: any) {
+      console.error("OAuth login error:", error);
+      return { data: null, error };
+    }
+  }
+
   async function signOut() {
     try {
-      setIsLoading(true);
-
-      // Logout from our backend
       await logoutUser();
-
-      // Reset states
       setSession(null);
       setUser(null);
       setProfile(null);
-
-      // Navigate to home page
-      router.push("/");
+      router.push("/auth/signin");
     } catch (error: any) {
-      console.error("Error signing out:", error);
-      throw new Error(error.message || "An error occurred during sign out");
-    } finally {
-      setIsLoading(false);
+      console.error("Sign-out error:", error);
     }
   }
 
-  // Reset password
   async function resetPassword(email: string) {
     try {
-      setIsLoading(true);
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      });
-
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
     } catch (error: any) {
-      console.error("Error resetting password:", error);
-      throw new Error(
-        error.message || "An error occurred during password reset",
-      );
-    } finally {
-      setIsLoading(false);
+      console.error("Password reset error:", error);
     }
   }
 
-  // Update user profile
-  async function updateProfile(data: any) {
+  async function updateProfile(updatedProfile: Partial<UserProfile>) {
     try {
-      setIsLoading(true);
-
-      // Update auth metadata if needed
-      if (data.full_name || data.avatar_url) {
-        const { error: metadataError } = await supabase.auth.updateUser({
-          data: {
-            full_name: data.full_name,
-            avatar_url: data.avatar_url,
-          },
-        });
-
-        if (metadataError) throw metadataError;
-      }
-
-      // Update profile in database
-      const { error: profileError } = await supabase
+      const { error } = await supabase
         .from("users")
-        .update(data)
-        .eq("id", user?.id);
+        .update(updatedProfile)
+        .eq("id", user?.id ?? "");
+      if (error) throw error;
 
-      if (profileError) throw profileError;
-
-      // Fetch updated profile
-      const { data: profileData } = await getUserProfile();
-      if (profileData) {
-        setProfile(profileData);
-      } else {
-        // Fallback to Supabase
-        const { data: updatedProfile } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", user?.id)
-          .single();
-
-        setProfile(updatedProfile);
-      }
+      await fetchUserProfile(user?.id ?? "");
     } catch (error: any) {
-      console.error("Error updating profile:", error);
-      throw new Error(
-        error.message || "An error occurred during profile update",
-      );
-    } finally {
-      setIsLoading(false);
+      console.error("Profile update error:", error);
     }
   }
 
-  // Refresh session
   async function refreshSession() {
     try {
-      setIsLoading(true);
+      const { data, error } = await refreshAuthToken();
+      if (error) throw error;
 
-      // Try to refresh with our backend first
-      const success = await refreshAuthToken();
-
-      if (!success) {
-        // If our backend refresh fails, try with Supabase
-        const { data, error } = await supabase.auth.refreshSession();
-
-        if (error) throw error;
-
+      if (data?.session) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
         setSession(data.session);
-        setUser(data.session?.user ?? null);
-      } else {
-        // Get the updated session from Supabase
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (session) {
-          setSession(session);
-          setUser(session.user);
-        }
+        setUser(data.session.user);
       }
     } catch (error: any) {
-      console.error("Error refreshing session:", error);
-      throw new Error(
-        error.message || "An error occurred while refreshing session",
-      );
-    } finally {
-      setIsLoading(false);
+      console.error("Session refresh error:", error);
     }
   }
 
@@ -406,5 +239,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Export just the context and provider
-export { AuthContext }
+export { AuthContext };
+

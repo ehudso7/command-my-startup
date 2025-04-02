@@ -1,85 +1,89 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
 
 // Backend API URL
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+// Mark this route as dynamic to handle cookies/auth
+export const dynamic = 'force-dynamic';
+
+// Input validation schema
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required")
+});
+
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
-
+    // Validate input
+    const body = await request.json();
+    const result = loginSchema.safeParse(body);
+    
+    if (!result.success) {
+      return NextResponse.json({ 
+        error: "Invalid input", 
+        details: result.error.format() 
+      }, { status: 400 });
+    }
+    
+    const { email, password } = result.data;
     const supabase = createClient();
     
-    // First, try to login with our backend API
+    // Try backend authentication first
     let backendData = null;
     let backendLoggedIn = false;
 
     try {
       const backendResponse = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-        credentials: "include", // Include cookies in the request and response
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        credentials: "include",
       });
 
       if (backendResponse.ok) {
         backendData = await backendResponse.json();
-        console.log("User logged in with backend successfully", backendData);
         backendLoggedIn = true;
         
-        // Forward cookies from backend response to the client
-        const cookieHeaders = backendResponse.headers.getSetCookie?.() || 
-                             backendResponse.headers.get('set-cookie');
+        // Forward cookies from backend response
+        const cookieHeader = backendResponse.headers.get('set-cookie');
         
-        if (cookieHeaders) {
+        if (cookieHeader) {
           const response = NextResponse.json({
             message: "Login successful",
             session: backendData.session,
             user: backendData.user,
           });
           
-          // Copy cookies from backend to response
-          for (const cookie of cookieHeaders) {
-            response.headers.append('Set-Cookie', cookie);
-          }
-          
+          // Set the cookies directly
+          response.headers.set('Set-Cookie', cookieHeader);
           return response;
         }
-      } else {
-        const errorText = await backendResponse.text();
-        console.error(`Failed to login with backend: ${errorText}. Status: ${backendResponse.status}. Falling back to Supabase.`);
       }
     } catch (backendError) {
-      console.error("Error connecting to backend:", backendError);
       // Continue with Supabase login
     }
 
-    // Also sign in with Supabase Auth as a fallback or parallel auth system
+    // Fall back to Supabase Auth if backend failed
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error && !backendLoggedIn) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: error.message }, { status: 401 });
     }
 
-    // Merge data from backend and Supabase
-    const resultData = {
+    // Combine data from both auth systems if needed
+    return NextResponse.json({
       message: "Login successful",
       session: data?.session || backendData?.session,
       user: data?.user || backendData?.user,
-    };
-
-    return NextResponse.json(resultData);
+    });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "Login failed" },
+      { error: "Authentication service error" },
       { status: 500 },
     );
   }
