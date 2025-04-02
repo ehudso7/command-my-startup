@@ -1,13 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from pydantic import BaseModel, Field
-from typing import List, Optional, Literal
 import logging
 from datetime import datetime
+from typing import List, Literal, Optional
 
-from app.auth.jwt import get_current_user, TokenData
-from app.lib.ai.openai_client import OpenAIClient
-from app.lib.ai.anthropic_client import AnthropicClient
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field
+
+from app.auth.jwt import TokenData, get_current_user
 from app.config import settings
+from app.lib.ai.anthropic_client import AnthropicClient
+from app.lib.ai.openai_client import OpenAIClient
 from app.lib.supabase.client import get_supabase_client
 
 # Initialize router with prefix

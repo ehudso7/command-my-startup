@@ -1,7 +1,8 @@
-import pytest
-from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
+
 import jwt
+import pytest
 
 from auth.utils import create_access_token
 from config import get_settings

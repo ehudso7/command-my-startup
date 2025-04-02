@@ -1,9 +1,10 @@
 from fastapi import APIRouter
+
 from routes.auth import router as auth_router
 from routes.commands import commands_router
-from routes.profile import router as profile_router
-from routes.history import router as history_router
 from routes.debug import router as debug_router
+from routes.history import router as history_router
+from routes.profile import router as profile_router
 
 # Create main API router
 api_router = APIRouter()

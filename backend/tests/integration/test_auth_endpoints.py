@@ -1,7 +1,8 @@
+import uuid
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from httpx import AsyncClient
-from unittest.mock import patch, MagicMock, AsyncMock
-import uuid
 
 from main import app
 

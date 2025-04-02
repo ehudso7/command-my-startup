@@ -5,10 +5,11 @@ This script tests the authentication routes directly without using unittest/pyte
 Run with: python test_auth_routes.py
 """
 
-import requests
 import json
 import sys
 from urllib.parse import urljoin
+
+import requests
 
 # Test configuration
 BASE_URL = "http://localhost:8000"  # Update this if your server is running elsewhere

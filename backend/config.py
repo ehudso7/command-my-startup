@@ -1,9 +1,10 @@
-import os
 import logging
-from typing import List, Optional
-from pydantic_settings import BaseSettings
+import os
 from functools import lru_cache
+from typing import List, Optional
+
 from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
 
 # Load .env file if it exists
 load_dotenv()

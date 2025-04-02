@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request, Response
-from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
-import time
-import secrets
 import logging
+import secrets
+import time
+
+from fastapi import FastAPI, Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.cors import CORSMiddleware
 
 # Set up logger
 logger = logging.getLogger("security")

@@ -1,12 +1,13 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Response, Cookie, Request
-from typing import Dict, Any, Optional
 import logging
 from datetime import datetime, timedelta
+from typing import Any, Dict, Optional
 
-from models.user import UserCreate, UserLogin, SessionResponse, TokenRefresh
-from lib.supabase import get_supabase_client, MockSupabaseClient
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
+
 from auth.utils import create_access_token, decode_token
 from config import get_settings
+from lib.supabase import MockSupabaseClient, get_supabase_client
+from models.user import SessionResponse, TokenRefresh, UserCreate, UserLogin
 
 router = APIRouter()
 settings = get_settings()

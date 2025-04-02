@@ -1,9 +1,10 @@
-from fastapi import Depends, HTTPException, status, Request, Cookie
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import JWTError, jwt
-from datetime import datetime, timedelta
 import logging
-from typing import Optional, Dict, Any
+from datetime import datetime, timedelta
+from typing import Any, Dict, Optional
+
+from fastapi import Cookie, Depends, HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
 
 from config import get_settings
 from lib.supabase import get_supabase_client

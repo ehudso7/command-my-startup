@@ -1,14 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from pydantic import BaseModel, Field
-from typing import List, Optional
 import logging
 from datetime import datetime
+from typing import List, Optional
 
-from app.auth.jwt import get_current_user, TokenData
-from app.lib.ai.openai_client import OpenAIClient
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field
+
+from app.auth.jwt import TokenData, get_current_user
 from app.lib.ai.anthropic_client import AnthropicClient
-from config import settings
+from app.lib.ai.openai_client import OpenAIClient
 from app.lib.supabase.client import get_supabase_client
+from config import settings
 
 commands_router = APIRouter(prefix="/commands", tags=["Commands"])
 logger = logging.getLogger("commands")

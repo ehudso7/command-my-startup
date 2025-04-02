@@ -1,8 +1,8 @@
 """
 Simple test server for deployment validation
 """
-from fastapi import FastAPI
 import uvicorn
+from fastapi import FastAPI
 
 app = FastAPI(title="Simple Test API")
 
@@ -19,8 +19,8 @@ def health_check():
 
 @app.get("/info")
 def get_info():
-    import sys
     import platform
+    import sys
 
     return {
         "python_version": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",

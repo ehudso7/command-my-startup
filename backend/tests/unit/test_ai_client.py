@@ -1,12 +1,13 @@
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
-import openai
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import anthropic
+import openai
+import pytest
 
 from lib.ai_client import (
-    generate_with_openai,
-    generate_with_anthropic,
     generate_response,
+    generate_with_anthropic,
+    generate_with_openai,
 )
 
 

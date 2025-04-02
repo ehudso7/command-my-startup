@@ -1,13 +1,13 @@
-import pytest
-from httpx import AsyncClient
-from unittest.mock import patch, MagicMock, AsyncMock
 import uuid
 from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from main import app
+import pytest
+from httpx import AsyncClient
+
 from auth.utils import create_access_token
+from main import app
 from models.command import AIModel
-
 
 # Mock data for tests
 mock_user_id = str(uuid.uuid4())

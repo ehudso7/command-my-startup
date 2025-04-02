@@ -1,12 +1,12 @@
+import hashlib
+import uuid
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from httpx import AsyncClient
-from unittest.mock import patch, MagicMock, AsyncMock
-import uuid
-import hashlib
 
 from main import app
 from middleware.request_validator import APIKeyUserDependency
-
 
 # Mock API key and user
 mock_api_key = "cms_" + "a" * 32

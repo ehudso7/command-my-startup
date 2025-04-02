@@ -1,19 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie, Request
+import logging
+from datetime import datetime, timedelta
+from typing import Optional
+
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
-from datetime import datetime, timedelta
-import logging
 
 from app.auth.jwt import (
+    TokenData,
     create_access_token,
     create_refresh_token,
     get_current_user,
-    TokenData,
 )
 from app.config import settings
 from app.lib.supabase.client import get_supabase_client
-from app.models.user import UserCreate, UserResponse, UserLogin
+from app.models.user import UserCreate, UserLogin, UserResponse
 
 # Initialize router
 router = APIRouter(prefix="/auth", tags=["Authentication"])

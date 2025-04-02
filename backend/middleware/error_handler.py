@@ -1,10 +1,11 @@
-from fastapi import Request, status
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import HTTPException, RequestValidationError
-from starlette.exceptions import HTTPException as StarletteHTTPException
-import traceback
 import logging
+import traceback
 from typing import Union
+
+from fastapi import Request, status
+from fastapi.exceptions import HTTPException, RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

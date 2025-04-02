@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from pydantic import BaseModel, EmailStr, Field
-from typing import List, Optional
 import logging
 import secrets
 import string
 from datetime import datetime
+from typing import List, Optional
 
-from app.auth.jwt import get_current_user, TokenData
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, EmailStr, Field
+
+from app.auth.jwt import TokenData, get_current_user
 from app.lib.supabase.client import get_supabase_client
 
 # Initialize router

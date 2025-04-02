@@ -1,12 +1,14 @@
-from datetime import datetime, timedelta
 import uuid
-from jose import jwt, JWTError
-from fastapi import Depends, HTTPException, status, Request
+from datetime import datetime, timedelta
+from typing import Dict, Optional
+
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 from pydantic import BaseModel, Field
-from typing import Optional, Dict
-from config import settings
+
 from app.lib.supabase.client import get_supabase_client
+from config import settings
 
 # Use 'auth/token' endpoint for token acquisition
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")

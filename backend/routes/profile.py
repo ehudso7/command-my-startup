@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
-from models.user import UserBase
-from lib.supabase import get_supabase_client
+from fastapi import APIRouter, Depends, HTTPException, status
+
 from auth.utils import get_current_user
+from lib.supabase import get_supabase_client
+from models.user import UserBase
 
 router = APIRouter()
 

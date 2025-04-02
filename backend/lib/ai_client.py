@@ -1,10 +1,12 @@
+import logging
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import anthropic
 import openai
 from openai import OpenAI  # Using synchronous client instead of AsyncOpenAI
-import anthropic
-import logging
+
 from config import get_settings
-from typing import Dict, Any, Optional, List
-from datetime import datetime
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -111,8 +113,8 @@ async def generate_with_anthropic(
     # Use mock response if Anthropic client is not available
     if anthropic_client is None:
         logger.info(f"Using mock Anthropic response for prompt: {prompt[:30]}...")
-        from datetime import datetime
         import uuid
+        from datetime import datetime
 
         # Create a simple mock response
         return {

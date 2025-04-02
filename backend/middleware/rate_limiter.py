@@ -1,11 +1,12 @@
+import hashlib
+import logging
+import time
+from datetime import datetime, timedelta
+from typing import Any, Dict, Optional, Tuple
+
 from fastapi import Request, Response, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from datetime import datetime, timedelta
-import time
-import logging
-import hashlib
-from typing import Dict, Any, Optional, Tuple
 
 # Import Redis conditionally to allow for environments without it
 try:

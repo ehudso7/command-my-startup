@@ -1,8 +1,9 @@
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+
 import openai
 from openai import OpenAI
-import asyncio
-from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor
 
 
 class OpenAIClient:

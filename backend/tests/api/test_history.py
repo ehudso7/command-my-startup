@@ -1,9 +1,11 @@
-import pytest
-from httpx import AsyncClient
-from unittest.mock import patch, MagicMock
-from fastapi import FastAPI
-from main import app
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
+
+import pytest
+from fastapi import FastAPI
+from httpx import AsyncClient
+
+from main import app
 
 # Mock user for authentication
 mock_user = {
