@@ -52,6 +52,7 @@ const nextConfig = {
   // Other configuration options
   experimental: {
     optimizePackageImports: ['@supabase/supabase-js', 'react-dom'],
+    serverActions: true
   },
 };
 
