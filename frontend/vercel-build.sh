@@ -1,22 +1,24 @@
 #!/bin/bash
-# Script to prepare and build for Vercel deployment
+# Optimized lightweight build script for Vercel deployment
 
-echo "🧹 Cleaning up previous build artifacts..."
+echo "🧹 Cleaning build environment..."
 rm -rf .next
 rm -rf node_modules/.cache
 
-echo "📦 Installing dependencies..."
-npm install
-
-echo "🔍 Verifying dependencies for Tailwind and Supabase..."
-npm list @tailwindcss/typography || npm install @tailwindcss/typography
-npm list @supabase/auth-helpers-nextjs || npm install @supabase/auth-helpers-nextjs
-
-echo "🔧 Setting environment variables for build..."
+echo "💡 Setting resource-saving environment variables..."
 export NODE_ENV=production
 export NEXT_TELEMETRY_DISABLED=1
+export NEXT_SHARP_PATH="/tmp/node_modules/sharp"
+export NODE_OPTIONS="--max-old-space-size=3072"
 
-echo "🚀 Building Next.js application..."
-next build
+echo "📦 Installing core dependencies only..."
+npm ci --omit=dev --no-fund --no-audit
+
+echo "🔍 Ensuring critical packages are available..."
+npm install --no-save @tailwindcss/typography@0.5.10
+npm install --no-save @supabase/auth-helpers-nextjs@0.8.7
+
+echo "🚀 Building with optimized settings..."
+NODE_OPTIONS="--max-old-space-size=3072" next build
 
 echo "✅ Build completed!"

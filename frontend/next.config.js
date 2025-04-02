@@ -1,12 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Build optimizations
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,
   },
-  reactStrictMode: true,
+  
+  // Performance settings
+  reactStrictMode: false,
+  poweredByHeader: false,
+  
+  // Static optimization - increase cache effectiveness
+  staticPageGenerationTimeout: 120,
   
   // Environment variables
   env: {
@@ -16,19 +23,15 @@ const nextConfig = {
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "pk_test_dummy_key_for_build_time_only",
   },
   
-  // Output settings
+  // Production output
   output: 'standalone',
   
-  // Server component settings
-  serverExternalPackages: ['@supabase/ssr'],
-  
-  // Experimental options with proper configuration
+  // Minimized experimental features 
   experimental: {
-    // Only specify critical features
-    optimizePackageImports: ['react-dom'],
-    serverActions: {
-      allowedOrigins: ['localhost:3000', 'command-my-startup-frontend-vercel.app', 'vercel.app']
-    }
+    // Disabled features to save resources
+    optimizeCss: true,
+    optimizeServerReact: true,
+    scrollRestoration: true,
   },
 };
 

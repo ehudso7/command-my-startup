@@ -1,14 +1,13 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "./vercel-build.sh",
   "devCommand": "npm run dev",
   "framework": "nextjs",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
+  "installCommand": "npm ci --omit=dev --no-fund --no-audit",
   "regions": ["iad1"],
   "env": {
     "NODE_ENV": "production",
     "NEXT_TELEMETRY_DISABLED": "1",
-    "NEXT_SHARP_PATH": "/tmp/node_modules/sharp"
+    "NODE_OPTIONS": "--max-old-space-size=3072"
   },
   "build": {
     "env": {
