@@ -10,11 +10,9 @@ from app.lib.ai.anthropic_client import AnthropicClient
 from config import settings
 from app.lib.supabase.client import get_supabase_client
 
-# ✅ Explicitly rename to avoid router alias conflicts
 commands_router = APIRouter(prefix="/commands", tags=["Commands"])
 logger = logging.getLogger("commands")
 
-# AI clients
 openai_client = OpenAIClient(settings.openai_api_key)
 anthropic_client = AnthropicClient(settings.anthropic_api_key)
 
@@ -78,7 +76,6 @@ async def execute_command(
         }
 
         result = supabase.table("commands").insert(command_data).execute()
-
         if result.data:
             response["id"] = result.data[0]["id"]
         else:
@@ -93,7 +90,7 @@ async def execute_command(
             detail="Failed to execute command"
         )
 
-@commands_router.get("", response_model=List[CommandHistory])
+@commands_router.get("/", response_model=List[CommandHistory])
 async def get_command_history(
     token_data: TokenData = Depends(get_current_user),
     limit: int = Query(20, ge=1, le=100),
@@ -209,4 +206,8 @@ async def delete_command(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete command"
         )
+
+@commands_router.get("/health")
+def health_check():
+    return {"status": "healthy"}
 
