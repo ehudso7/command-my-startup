@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 
+// Mark this route as dynamic to handle cookies/auth
+export const dynamic = 'force-dynamic';
+
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
 
@@ -15,7 +18,7 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    // Create client with compatible interface for auth-helpers-nextjs v0.8.7
+    // Create Supabase client with minimal configuration
     const supabase = createMiddlewareClient({ req, res });
 
     // Get session

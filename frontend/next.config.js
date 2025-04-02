@@ -46,12 +46,12 @@ const nextConfig = {
   transpilePackages: [],
   output: 'standalone',
   
-  // Fix swcMinify issues
-  swcMinify: false,
+  // Specify server external packages for server components
+  serverExternalPackages: ['@supabase/ssr', '@supabase/supabase-js'],
   
-  // Disable static optimization for all pages to avoid Server Component serialization issues
+  // Other configuration options
   experimental: {
-    serverComponentsExternalPackages: ['@supabase/ssr', '@supabase/supabase-js'],
+    optimizePackageImports: ['@supabase/supabase-js', 'react-dom'],
   },
 };
 

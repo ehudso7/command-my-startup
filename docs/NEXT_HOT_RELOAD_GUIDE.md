@@ -7,6 +7,9 @@ This guide provides solutions to common hot reloading issues with Next.js develo
 To get the best hot reloading experience, use one of these commands:
 
 ```bash
+# Optimal for homepage development - includes auto-installing dependencies
+npm run dev:homepage
+
 # Optimal development setup with enhanced hot reloading
 npm run dev:optimal
 
@@ -15,6 +18,15 @@ npm run dev:hot
 
 # For environments where file system events don't work well (like some Docker containers)
 npm run dev-polling
+```
+
+## Required Dependencies
+
+For hot reloading to work properly, ensure these dependencies are installed:
+
+```bash
+# Install required dependencies for development
+npm install @supabase/auth-helpers-nextjs @tailwindcss/typography
 ```
 
 ## Troubleshooting Hot Reloading Issues
