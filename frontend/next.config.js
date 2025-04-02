@@ -26,12 +26,21 @@ const nextConfig = {
   // Production output
   output: 'standalone',
   
-  // Minimized experimental features 
+  // External packages for server components
+  serverExternalPackages: ['@supabase/ssr', '@supabase/supabase-js'],
+  
+  // Optimized experimental features
   experimental: {
-    // Disabled CSS optimization due to critters dependency issues
+    // Disabled CSS optimization to avoid critters dependency issues
     optimizeCss: false,
-    optimizeServerReact: true,
+    // Performance optimizations
     scrollRestoration: true,
+  },
+
+  // Image optimization settings
+  images: {
+    unoptimized: false,
+    remotePatterns: [],
   },
 };
 

@@ -64,7 +64,7 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", ...fontFamily.sans],  // Using the imported fontFamily.sans
+        sans: ["Inter", "sans-serif", ...fontFamily.sans],  // Using Inter font
       },
       keyframes: {
         "fade-in": {

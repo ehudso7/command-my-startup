@@ -12,12 +12,18 @@ export NEXT_SHARP_PATH="/tmp/node_modules/sharp"
 export NODE_OPTIONS="--max-old-space-size=3072"
 
 echo "📦 Installing dependencies..."
-npm install
+npm clean-install
 
 echo "🔍 Ensuring critical packages are available..."
 npm install --no-save @tailwindcss/typography@0.5.10
 npm install --no-save @supabase/auth-helpers-nextjs@0.8.7
-npm install --no-save critters
+npm install --no-save critters@0.0.20
+
+echo "🛠️ Applying dynamic route fixes..."
+chmod +x ./fix-routes.sh && ./fix-routes.sh
+
+echo "🛠️ Applying CSS fixes..."
+node ./fix-vercel-css.js
 
 echo "🚀 Building with optimized settings..."
 NODE_OPTIONS="--max-old-space-size=3072" next build

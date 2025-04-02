@@ -1,13 +1,15 @@
 {
-  "buildCommand": "./vercel-build.sh",
-  "devCommand": "npm run dev",
   "framework": "nextjs",
-  "installCommand": "npm install",
+  "buildCommand": "chmod +x ./vercel-build.sh && ./vercel-build.sh",
+  "installCommand": "npm clean-install",
+  "devCommand": "npm run dev",
+  "outputDirectory": ".next",
   "regions": ["iad1"],
   "env": {
     "NODE_ENV": "production",
     "NEXT_TELEMETRY_DISABLED": "1",
-    "NODE_OPTIONS": "--max-old-space-size=3072"
+    "NODE_OPTIONS": "--max-old-space-size=3072",
+    "NEXT_SHARP_PATH": "/tmp/node_modules/sharp"
   },
   "build": {
     "env": {
@@ -20,7 +22,10 @@
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" }
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
       ]
     }
   ]
