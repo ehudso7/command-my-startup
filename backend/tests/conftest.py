@@ -1,6 +1,7 @@
-import pytest
 import os
 from unittest.mock import patch
+
+import pytest
 
 # Set test environment variables
 os.environ["ENVIRONMENT"] = "test"

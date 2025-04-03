@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, status
-from typing import Dict, Any
 import importlib
 import sys
+from typing import Any, Dict
+
+from fastapi import APIRouter, HTTPException, status
 
 router = APIRouter()
 
@@ -20,7 +21,7 @@ async def get_dependencies():
         "pydantic": importlib.import_module("pydantic").__version__,
         "python": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
     }
-    
+
     # Check optional packages
     for package in ["openai", "anthropic", "supabase", "prometheus_client"]:
         try:
@@ -29,7 +30,7 @@ async def get_dependencies():
             dependencies[package] = version
         except ImportError:
             dependencies[package] = "not installed"
-    
+
     return {"dependencies": dependencies}
 
 
@@ -38,7 +39,7 @@ async def get_config():
     """Get redacted configuration"""
     try:
         from config import get_settings
-        
+
         settings = get_settings()
         # Create a safe version of settings without sensitive values
         safe_settings = {
@@ -54,7 +55,7 @@ async def get_config():
             "stripe_api_key": "✓" if settings.stripe_api_key else "✗",
             "jwt_secret_key": "✓" if settings.jwt_secret_key else "✗",
         }
-        
+
         return {"config": safe_settings}
     except Exception as e:
         return {"error": str(e)}

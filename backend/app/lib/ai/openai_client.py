@@ -1,13 +1,15 @@
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+
 import openai
 from openai import OpenAI
-import asyncio
-from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor
+
 
 class OpenAIClient:
     def __init__(self, api_key):
         self.client = OpenAI(api_key=api_key)
-    
+
     async def generate(self, prompt, model="gpt-4o", temperature=0.7, max_tokens=1000):
         """Generate text using OpenAI's API with async support"""
         try:
@@ -19,10 +21,10 @@ class OpenAIClient:
                         model=model,
                         messages=[{"role": "user", "content": prompt}],
                         temperature=temperature,
-                        max_tokens=max_tokens
-                    )
+                        max_tokens=max_tokens,
+                    ),
                 )
-            
+
             return {
                 "id": response.id,
                 "content": response.choices[0].message.content,

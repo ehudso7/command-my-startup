@@ -1,5 +1,6 @@
+from typing import Any, Dict, Optional
+
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, Dict, Any
 
 
 class UserBase(BaseModel):
@@ -19,7 +20,7 @@ class UserLogin(BaseModel):
 class UserResponse(UserBase):
     id: str = Field(..., description="User unique identifier")
     created_at: str = Field(..., description="User creation timestamp")
-    
+
     class Config:
         from_attributes = True
 
