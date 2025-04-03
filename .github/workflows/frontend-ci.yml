@@ -2,12 +2,12 @@ name: Frontend CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, ci-fix-backend, production ]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-ci.yml'
   pull_request:
-    branches: [ main ]
+    branches: [ main, ci-fix-backend, production ]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-ci.yml'
@@ -75,4 +75,5 @@ jobs:
         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       run: |
         cd frontend
-        vercel deploy --prod --token=$VERCEL_TOKEN
+        vercel deploy --prod --token=$VERCEL_TOKEN%
+
