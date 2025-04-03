@@ -1,6 +1,7 @@
+import logging
+import os
 import uvicorn
 from fastapi import FastAPI
-import os
 
 app = FastAPI(title="Simple Test API")
 
@@ -27,6 +28,7 @@ def get_info():
     }
 
 if __name__ == "__main__":
-    host = os.getenv("HOST", "127.0.0.1")  # Default to localhost if not specified
-    uvicorn.run(app, host=host, port=8000)
+    host = os.getenv("HOST", "0.0.0.0")  # Binding to 0.0.0.0 for Render
+    port = int(os.getenv("PORT", 8000))  # Default to 8000 if no PORT environment variable
+    uvicorn.run(app, host=host, port=port)
 
