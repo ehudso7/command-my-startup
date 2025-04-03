@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, ci-fix-backend, production ]
+    branches: [ main, local-terminal-changes, production ]
   pull_request:
-    branches: [ main, ci-fix-backend, production ]
+    branches: [ main, local-terminal-changes, production ]
 
 jobs:
   build-and-lint:
@@ -31,6 +31,7 @@ jobs:
       - name: 🏗️ Build Project
         run: npm run build
 
+  # Add Backend CI steps to ci.yml
   backend-test:
     runs-on: ubuntu-latest
     steps:
@@ -71,6 +72,7 @@ jobs:
           pytest tests/ --cov=. --cov-report=xml
         env:
           JWT_SECRET_KEY: ${{ secrets.TEST_JWT_SECRET }}
+          # Add any additional environment variables your backend needs for testing
 
       - name: 📤 Upload coverage report to Codecov
         uses: codecov/codecov-action@v3
