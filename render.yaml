@@ -2,7 +2,7 @@ services:
   - type: web
     name: command-my-startup-backend
     env: python
-    pythonVersion: 3.11.8
+    pythonVersion: 3.11
     plan: standard  # Consider 'starter' for dev, 'standard' for prod scalability
     buildCommand: |
       python -m venv venv
